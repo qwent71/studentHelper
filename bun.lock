@@ -59,6 +59,9 @@
     "packages/contracts": {
       "name": "@student-helper/contracts",
       "version": "0.0.0",
+      "dependencies": {
+        "zod": "^3.25.7",
+      },
       "devDependencies": {
         "@student-helper/eslint": "*",
         "@student-helper/tsconfig": "*",
