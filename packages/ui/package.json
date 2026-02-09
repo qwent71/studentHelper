@@ -12,6 +12,7 @@
     "./tokens/*": "./src/tokens/*.ts",
     "./types": "./src/types/index.ts",
     "./types/*": "./src/types/*.ts",
+    "./web": "./src/web/index.ts",
     "./web/primitives/*": "./src/web/primitives/*.tsx",
     "./web/components/*": "./src/web/components/*.tsx",
     "./web/hooks/*": "./src/web/hooks/*.ts",
