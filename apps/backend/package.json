@@ -1,0 +1,21 @@
+{
+  "name": "@student-helper/backend",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "bun --watch src/index.ts",
+    "build": "bun build src/index.ts --outdir dist --target bun",
+    "start": "bun dist/index.js",
+    "lint": "eslint . --max-warnings 0",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "elysia": "^1.2.25"
+  },
+  "devDependencies": {
+    "@student-helper/eslint": "*",
+    "@student-helper/tsconfig": "*",
+    "typescript": "5.9.2"
+  }
+}

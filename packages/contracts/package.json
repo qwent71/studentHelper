@@ -1,0 +1,18 @@
+{
+  "name": "@student-helper/contracts",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint . --max-warnings 0",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@student-helper/eslint": "*",
+    "@student-helper/tsconfig": "*",
+    "typescript": "5.9.2"
+  }
+}

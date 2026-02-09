@@ -1,5 +1,5 @@
 import { type JSX } from "react";
-import { cn } from "@repo/ui/utils/cn";
+import { cn } from "@student-helper/ui/utils/cn";
 
 export function Code({
   children,
