@@ -1,4 +1,4 @@
-@import "@repo/ui/globals.css";
+@import "@student-helper/ui/globals.css";
 
 @source "../../../packages/ui/src/**/*.{ts,tsx}";
 

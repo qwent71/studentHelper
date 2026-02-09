@@ -1,5 +1,5 @@
 {
-  "name": "@repo/ui",
+  "name": "@student-helper/ui",
   "version": "0.0.0",
   "type": "module",
   "private": true,
@@ -12,6 +12,7 @@
     "./tokens/*": "./src/tokens/*.ts",
     "./types": "./src/types/index.ts",
     "./types/*": "./src/types/*.ts",
+    "./web": "./src/web/index.ts",
     "./web/primitives/*": "./src/web/primitives/*.tsx",
     "./web/components/*": "./src/web/components/*.tsx",
     "./web/hooks/*": "./src/web/hooks/*.ts",
@@ -20,7 +21,7 @@
   "scripts": {
     "lint": "eslint . --max-warnings 0",
     "generate:component": "turbo gen react-component",
-    "check-types": "tsc --noEmit"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.4",
@@ -33,8 +34,8 @@
     "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {
-    "@repo/eslint-config": "*",
-    "@repo/typescript-config": "*",
+    "@student-helper/eslint": "*",
+    "@student-helper/tsconfig": "*",
     "@tailwindcss/postcss": "^4.1.18",
     "@types/node": "^22.15.3",
     "@types/react": "19.2.2",

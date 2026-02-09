@@ -10,11 +10,11 @@
     "cssVariables": true
   },
   "aliases": {
-    "components": "@repo/ui/web/primitives",
-    "utils": "@repo/ui/utils/cn",
-    "ui": "@repo/ui/web/primitives",
-    "lib": "@repo/ui/lib",
-    "hooks": "@repo/ui/web/hooks"
+    "components": "@student-helper/ui/web/primitives",
+    "utils": "@student-helper/ui/utils/cn",
+    "ui": "@student-helper/ui/web/primitives",
+    "lib": "@student-helper/ui/lib",
+    "hooks": "@student-helper/ui/web/hooks"
   },
   "iconLibrary": "lucide"
 }
