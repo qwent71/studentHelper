@@ -1,9 +1,8 @@
 import { Elysia } from "elysia";
-
-const port = process.env["BACKEND_PORT"] ?? 3001;
+import { env } from "@student-helper/config";
 
 const app = new Elysia()
   .get("/", () => ({ status: "ok" }))
-  .listen(port);
+  .listen(env.BACKEND_PORT);
 
 console.log(`Backend running at http://localhost:${app.server?.port}`);
