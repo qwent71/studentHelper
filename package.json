@@ -7,7 +7,9 @@
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "typecheck": "turbo run typecheck",
-    "test": "turbo run test"
+    "test": "turbo run test",
+    "backend:dev": "turbo run dev --filter=@student-helper/backend",
+    "workers:dev": "turbo run workers:dev --filter=@student-helper/backend"
   },
   "devDependencies": {
     "prettier": "^3.7.4",

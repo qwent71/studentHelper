@@ -7,7 +7,12 @@ const envSchema = z.object({
   FRONTEND_PORT: z.coerce.number().default(3000),
   BACKEND_PORT: z.coerce.number().default(3001),
   BACKEND_URL: z.string().default("http://localhost:3001"),
-  DATABASE_URL: z.string().optional(),
+  DATABASE_URL: z.string(),
+  BETTER_AUTH_SECRET: z.string(),
+  FRONTEND_URL: z.string().default("http://localhost:3000"),
+  REDIS_URL: z.string().default("redis://localhost:6379"),
+  CENTRIFUGO_TOKEN_SECRET: z.string().default("centrifugo-dev-secret"),
+  CENTRIFUGO_URL: z.string().default("http://localhost:8800"),
   OPENAI_API_KEY: z.string().optional(),
 });
 
