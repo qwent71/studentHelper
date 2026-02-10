@@ -13,6 +13,8 @@ bun run build            # Build all workspaces
 bun run lint             # Lint all workspaces (--max-warnings 0)
 bun run typecheck        # Type-check all workspaces
 bun run format           # Prettier format all ts/tsx/md files
+bun run backend:dev      # Start backend only
+bun run workers:dev      # Start BullMQ workers only
 ```
 
 ### Per-workspace commands
@@ -21,6 +23,21 @@ bun run format           # Prettier format all ts/tsx/md files
 bun run --filter frontend dev          # Dev server on port 3000
 bun run --filter frontend build        # Build web app only
 bun run --filter @student-helper/ui lint    # Lint UI package only
+```
+
+### Database commands (from `apps/backend/`)
+
+```bash
+bun run db:generate      # Generate Drizzle migrations from schema
+bun run db:migrate       # Apply migrations to Postgres
+bun run db:studio        # Open Drizzle Studio GUI
+```
+
+### Infrastructure
+
+```bash
+docker compose up -d     # Start Postgres, Redis, Centrifugo
+docker compose down      # Stop all services
 ```
 
 ### Adding shadcn/ui components
@@ -32,7 +49,7 @@ The UI package uses shadcn/ui (new-york style) with Radix primitives. The `compo
 **Turborepo monorepo** with these workspaces:
 
 - **`apps/frontend`** — Next.js 16 app (React 19). The main web application. Uses App Router.
-- **`apps/backend`** — Elysia server on port 3001.
+- **`apps/backend`** — Elysia server (default port 3001, configurable via `BACKEND_PORT`). Modular architecture under `src/modules/`. Uses Drizzle ORM + Postgres, Better Auth, BullMQ + Redis, Centrifugo for realtime.
 - **`packages/ui`** (`@student-helper/ui`) — Shared component library built on Radix UI + Tailwind CSS 4 + Class Variance Authority. Contains:
   - `src/web/primitives/` — Low-level shadcn-style components (button, input, dialog, dropdown-menu, code)
   - `src/web/components/` — Higher-level composed components (card)
@@ -53,3 +70,65 @@ The UI package uses shadcn/ui (new-york style) with Radix primitives. The `compo
 - **Component variants**: Use Class Variance Authority (`cva`) for defining component variants (see button.tsx as reference).
 - **ESLint**: Flat config format (ESLint 9). Zero warnings policy (`--max-warnings 0`).
 - **TypeScript**: Strict mode, ESM modules (`"type": "module"`), target ES2022.
+
+## Backend Architecture
+
+### Module structure
+
+Each module lives in `apps/backend/src/modules/<name>/` with three files:
+- `routes.ts` — Elysia plugin with a prefix (e.g. `new Elysia({ prefix: "/chat" })`)
+- `services.ts` — Business logic
+- `repo.ts` — DB access layer (Drizzle queries)
+
+Modules: `account`, `chat`, `uploads`, `textbook`, `family`, `rag`, `admin`, `centrifugo`.
+
+### App factory
+
+`apps/backend/src/app.ts` exports `createApp()` which assembles the Elysia app: CORS, auth plugin, all module routes. `src/index.ts` calls `createApp().listen()`.
+
+### Database
+
+- **Drizzle ORM** with `postgres.js` driver. Schema in `src/db/schema.ts`, client in `src/db/index.ts`.
+- **Drizzle Kit** config at `apps/backend/drizzle.config.ts` (outside `src/`, not typechecked). Migrations output to `apps/backend/drizzle/`.
+- Tables: `user`, `session`, `account`, `verification` (Better Auth), `chat`, `message` (app).
+- All columns use snake_case in Postgres (e.g. `email_verified`, `user_id`).
+
+### Authentication
+
+- **Better Auth** with email+password. Config in `src/auth.ts`.
+- Elysia plugin in `src/plugins/auth.ts`: mounts handler at `/api/auth/*` and provides `auth` macro for protected routes.
+- **Macro usage**: In Elysia macros, use `status(code, body)` (not `error()`). Example: `return status(401, { error: "Unauthorized" })`.
+
+### Queues & Workers
+
+- **BullMQ** queues defined in `src/queues/index.ts`: `messageGenerationQueue`, `autoArchiveQueue`.
+- **Workers** in `src/queues/workers.ts`, started via separate entry `src/worker.ts` (`bun run workers:dev`).
+- **Redis** connection in `src/redis/index.ts` using `ioredis`.
+
+### Realtime
+
+- **Centrifugo** for WebSocket realtime. Token endpoint at `GET /centrifugo/token` (HS256 JWT via `jose`).
+- Config in `centrifugo.json` at repo root.
+
+## Environment Variables
+
+Defined in `packages/config/src/env.ts` (Zod schema). Key vars:
+
+| Variable | Default |
+|---|---|
+| `BACKEND_PORT` | `3001` |
+| `FRONTEND_PORT` | `3000` |
+| `BACKEND_URL` | `http://localhost:3001` |
+| `FRONTEND_URL` | `http://localhost:3000` |
+| `DATABASE_URL` | *(required)* |
+| `BETTER_AUTH_SECRET` | *(required)* |
+| `REDIS_URL` | `redis://localhost:6379` |
+| `CENTRIFUGO_TOKEN_SECRET` | `centrifugo-dev-secret` |
+| `CENTRIFUGO_URL` | `http://localhost:8800` |
+
+## Docker Compose
+
+Services in `docker-compose.yml`:
+- **postgres** (17-alpine) — port 5432, user/pass/db: `studenthelper`
+- **redis** (7-alpine) — port 6379
+- **centrifugo** (v6) — ports 8800→8000, 8801→8001
