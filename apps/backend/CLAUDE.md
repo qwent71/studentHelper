@@ -1,0 +1,163 @@
+# Backend — CLAUDE.md
+
+Elysia server with modular architecture. Uses Drizzle ORM + Postgres, Better Auth, BullMQ + Redis, Centrifugo for realtime.
+
+## Commands
+
+```bash
+bun run --filter backend dev         # Dev server with watch (port from BACKEND_PORT, default 3001)
+bun run --filter backend build       # Build to dist/ (bun target)
+bun run --filter backend workers:dev # Start BullMQ workers with watch (separate process)
+bun run --filter backend lint        # ESLint (--max-warnings 0)
+bun run --filter backend typecheck   # tsc --noEmit
+```
+
+### Database (run from apps/backend/)
+
+```bash
+bun run db:generate   # Generate Drizzle migrations from schema
+bun run db:migrate    # Apply migrations to Postgres
+bun run db:studio     # Open Drizzle Studio GUI
+```
+
+## Project Structure
+
+```
+src/
+├── index.ts              # Entry: createApp().listen(BACKEND_PORT)
+├── app.ts                # App factory: CORS, health check, auth plugin, all module routes
+├── auth.ts               # Better Auth config (email+password, magicLink, organization, admin)
+├── worker.ts             # Worker entry point (imports queues/workers.ts)
+├── db/
+│   ├── index.ts          # Drizzle client (postgres.js driver)
+│   └── schema.ts         # Full database schema
+├── plugins/
+│   └── auth.ts           # Auth macros (auth, adminAuth) + mount /api/auth/*
+├── redis/
+│   └── index.ts          # ioredis client (maxRetriesPerRequest: null for BullMQ)
+├── queues/
+│   ├── index.ts          # Queue definitions (messageGenerationQueue, autoArchiveQueue)
+│   └── workers.ts        # Worker processors (stubs)
+└── modules/              # Feature modules
+    ├── account/           # /account — user account management
+    ├── admin/             # /admin — admin panel (adminAuth macro)
+    ├── chat/              # /chat — chat conversations
+    ├── centrifugo/        # /centrifugo — WebSocket token generation
+    ├── family/            # /family — family features
+    ├── rag/               # /rag — RAG pipeline
+    ├── textbook/          # /textbook — textbook management
+    └── uploads/           # /uploads — file uploads
+```
+
+## Module Convention
+
+Each module in `src/modules/<name>/` has three files:
+
+- **`routes.ts`** — Elysia plugin with prefix: `new Elysia({ prefix: "/<name>" })`
+- **`services.ts`** — Business logic functions
+- **`repo.ts`** — Database access layer (Drizzle queries)
+
+Register new modules in `src/app.ts` via `.use(moduleRoutes)`.
+
+## Authentication
+
+### Better Auth config (`src/auth.ts`)
+
+- Email + password enabled
+- Magic links (dev: logs URL, prod: throws)
+- Organization plugin (multi-tenancy)
+- Admin plugin (role-based access)
+- Cookie prefix: `sh`, httpOnly, sameSite: lax
+
+### Auth macros (`src/plugins/auth.ts`)
+
+Two macros available for route protection:
+
+```typescript
+// Any authenticated user
+.get("/route", ({ user, session }) => { ... }, { auth: true })
+
+// Admin only (role === "admin")
+.get("/admin", ({ user, session }) => { ... }, { adminAuth: true })
+```
+
+**Critical**: In macro resolve functions, use `status(code, body)` — NOT `error(code, body)`:
+
+```typescript
+return status(401, { error: "Unauthorized" });
+return status(403, { error: "Forbidden" });
+```
+
+## Database
+
+### Schema (`src/db/schema.ts`)
+
+**Better Auth tables** (text PKs, snake_case columns):
+- `user` — id, name, email (unique), emailVerified, image, role, banned, banReason, banExpires
+- `session` — id, userId (FK), token (unique), expiresAt, ipAddress, userAgent, impersonatedBy, activeOrganizationId
+- `account` — id, userId (FK), accountId, providerId, accessToken, refreshToken, password
+- `verification` — id, identifier, value, expiresAt
+
+**Organization tables**:
+- `organization` — id, name, slug (unique), logo
+- `member` — id, organizationId (FK), userId (FK), role
+- `invitation` — id, organizationId (FK), email, role, status, inviterId (FK)
+
+**App tables**:
+- `chat` — id (uuid), userId (FK), title, archivedAt
+- `message` — id (uuid), chatId (FK), role (enum: user/assistant/system), content
+
+All FKs cascade on delete. Indexes on FK columns.
+
+### Client (`src/db/index.ts`)
+
+```typescript
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
+```
+
+### Migrations
+
+- Config: `drizzle.config.ts` (project root, outside src/, not typechecked)
+- Output: `drizzle/` directory
+- Generate then migrate: `bun run db:generate && bun run db:migrate`
+
+## Queues & Workers
+
+- **Queues** (`src/queues/index.ts`): `messageGenerationQueue`, `autoArchiveQueue`
+- **Workers** (`src/queues/workers.ts`): Stub processors, log job IDs
+- **Entry**: `src/worker.ts` — separate process from main app
+- **Redis**: `src/redis/index.ts` — ioredis with `maxRetriesPerRequest: null`
+
+## Realtime (Centrifugo)
+
+- `GET /centrifugo/token` (auth required) — returns HS256 JWT
+- JWT claims: `{ sub: user.id }`, expires in 5 minutes
+- Signed with `CENTRIFUGO_TOKEN_SECRET` via `jose` library
+
+## App Assembly Order (`src/app.ts`)
+
+1. CORS (origin: `FRONTEND_URL`, credentials: true)
+2. `GET /health` — `{ status: "ok", timestamp }`
+3. Auth plugin (mounts `/api/auth/*` + macros)
+4. All module routes
+
+## Environment Variables
+
+Via `@student-helper/config`:
+
+| Variable | Default | Required |
+|---|---|---|
+| `BACKEND_PORT` | `3001` | No |
+| `BACKEND_URL` | `http://localhost:3001` | No |
+| `FRONTEND_URL` | `http://localhost:3000` | No |
+| `DATABASE_URL` | — | Yes |
+| `BETTER_AUTH_SECRET` | — | Yes |
+| `REDIS_URL` | `redis://localhost:6379` | No |
+| `CENTRIFUGO_TOKEN_SECRET` | `centrifugo-dev-secret` | No |
+
+## Configuration
+
+- **TypeScript**: Extends `@student-helper/tsconfig/base.json`. Strict mode, ESNext modules, Bundler resolution.
+- **ESLint**: Uses `@student-helper/eslint/base` shared flat config. Zero warnings policy.
+- **Drizzle Kit**: `drizzle.config.ts` at project root (not in src/, not typechecked).
