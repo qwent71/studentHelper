@@ -3,9 +3,10 @@ import { magicLinkClient } from "better-auth/client/plugins";
 import { adminClient } from "better-auth/client/plugins";
 import { organizationClient } from "better-auth/client/plugins";
 import { nextCookies } from "better-auth/next-js";
+import { getBackendUrl } from "./env";
 
 export const authClient = createAuthClient({
-  baseURL: process.env.BACKEND_URL ?? "http://localhost:3001",
+  baseURL: getBackendUrl(),
   basePath: "/api/auth",
   plugins: [
     magicLinkClient(),
