@@ -22,8 +22,8 @@
     "migrations:fresh": "drizzle-migrations fresh",
     "migrations:refresh": "drizzle-migrations refresh",
     "workers:dev": "bun --watch src/worker.ts",
-    "test:unit": "bun test ./test/unit",
-    "test:integration": "bun test ./test/integration --preload ./test/setup/integration.preload.ts",
+    "test:unit": "NODE_ENV=test bun test ./test/unit",
+    "test:integration": "NODE_ENV=test bun test ./test/integration --preload ./test/setup/integration.preload.ts",
     "tests": "bun run test:unit && bun run test:integration"
   },
   "dependencies": {
