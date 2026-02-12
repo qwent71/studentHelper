@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@student-helper/ui/web/primitives/button";
 import { Input } from "@student-helper/ui/web/primitives/input";
@@ -9,6 +9,7 @@ import { signIn } from "@/lib/auth-client";
 
 export function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -30,7 +31,12 @@ export function LoginForm() {
       return;
     }
 
-    router.push("/app");
+    const callbackUrl = searchParams.get("callbackUrl");
+    const redirectTo =
+      callbackUrl && callbackUrl.startsWith("/") && !callbackUrl.startsWith("//")
+        ? callbackUrl
+        : "/app";
+    router.push(redirectTo);
   }
 
   return (
