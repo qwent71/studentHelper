@@ -2,8 +2,6 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getBackendUrl } from "./lib/env";
 
-const AUTH_COOKIE_SUFFIX = "sh.session_token";
-
 async function hasValidSession(request: NextRequest): Promise<boolean> {
   const cookie = request.headers.get("cookie");
   if (!cookie) return false;
@@ -28,15 +26,12 @@ export async function middleware(request: NextRequest) {
   const isAuthPage = pathname.startsWith("/auth");
   const isProtectedPage =
     pathname.startsWith("/app") || pathname.startsWith("/admin");
-  const hasSessionCookie = request.cookies
-    .getAll()
-    .some(({ name }) => name.endsWith(AUTH_COOKIE_SUFFIX));
 
   if (!isAuthPage && !isProtectedPage) {
     return NextResponse.next();
   }
 
-  const isAuthenticated = hasSessionCookie && (await hasValidSession(request));
+  const isAuthenticated = await hasValidSession(request);
 
   // Authenticated users visiting auth pages → redirect to /app
   if (isAuthenticated && isAuthPage) {
