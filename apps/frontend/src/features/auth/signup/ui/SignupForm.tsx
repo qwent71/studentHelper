@@ -1,15 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@student-helper/ui/web/primitives/button";
 import { Input } from "@student-helper/ui/web/primitives/input";
-import { signIn } from "@/lib/auth-client";
+import { signUp } from "@/shared/auth/auth-client";
 
-export function LoginForm() {
+export function SignupForm() {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -20,31 +20,27 @@ export function LoginForm() {
     setError(null);
     setLoading(true);
 
-    const { error: signInError } = await signIn.email({
+    const { error: signUpError } = await signUp.email({
+      name,
       email,
       password,
     });
 
-    if (signInError) {
-      setError(signInError.message ?? "Failed to sign in");
+    if (signUpError) {
+      setError(signUpError.message ?? "Failed to create account");
       setLoading(false);
       return;
     }
 
-    const callbackUrl = searchParams.get("callbackUrl");
-    const redirectTo =
-      callbackUrl && callbackUrl.startsWith("/") && !callbackUrl.startsWith("//")
-        ? callbackUrl
-        : "/app";
-    router.push(redirectTo);
+    router.push("/app");
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2 text-center">
-        <h1 className="text-2xl font-bold tracking-tight">Welcome back</h1>
+        <h1 className="text-2xl font-bold tracking-tight">Create account</h1>
         <p className="text-muted-foreground text-sm">
-          Enter your credentials to sign in
+          Enter your details to get started
         </p>
       </div>
 
@@ -55,6 +51,21 @@ export function LoginForm() {
       )}
 
       <div className="space-y-4">
+        <div className="space-y-2">
+          <label htmlFor="name" className="text-sm font-medium">
+            Name
+          </label>
+          <Input
+            id="name"
+            type="text"
+            placeholder="Your name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+            autoComplete="name"
+          />
+        </div>
+
         <div className="space-y-2">
           <label htmlFor="email" className="text-sm font-medium">
             Email
@@ -80,19 +91,20 @@ export function LoginForm() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            autoComplete="current-password"
+            minLength={8}
+            autoComplete="new-password"
           />
         </div>
 
         <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? "Signing in..." : "Sign in"}
+          {loading ? "Creating account..." : "Sign up"}
         </Button>
       </div>
 
       <p className="text-muted-foreground text-center text-sm">
-        Don&apos;t have an account?{" "}
-        <Link href="/auth/signup" className="text-primary hover:underline">
-          Sign up
+        Already have an account?{" "}
+        <Link href="/auth/login" className="text-primary hover:underline">
+          Sign in
         </Link>
       </p>
     </form>

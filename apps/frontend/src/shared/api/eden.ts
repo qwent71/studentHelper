@@ -1,6 +1,6 @@
 import { treaty, type Treaty } from "@elysiajs/eden";
 import type { App } from "@student-helper/backend/app-type";
-import { getBackendUrl } from "./env";
+import { getBackendUrl } from "@/shared/lib/env";
 
 export function getApiBaseUrl(): string {
   return getBackendUrl();

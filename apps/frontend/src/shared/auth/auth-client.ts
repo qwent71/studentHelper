@@ -1,19 +1,15 @@
+"use client";
+
 import { createAuthClient } from "better-auth/react";
 import { magicLinkClient } from "better-auth/client/plugins";
 import { adminClient } from "better-auth/client/plugins";
 import { organizationClient } from "better-auth/client/plugins";
-import { nextCookies } from "better-auth/next-js";
-import { getBackendUrl } from "./env";
+import { getBackendUrl } from "@/shared/lib/env";
 
 export const authClient = createAuthClient({
   baseURL: getBackendUrl(),
   basePath: "/api/auth",
-  plugins: [
-    magicLinkClient(),
-    adminClient(),
-    organizationClient(),
-    nextCookies(),
-  ],
+  plugins: [magicLinkClient(), adminClient(), organizationClient()],
 });
 
-export const { signIn, signUp, signOut, useSession, getSession } = authClient;
+export const { signIn, signUp, signOut, useSession } = authClient;

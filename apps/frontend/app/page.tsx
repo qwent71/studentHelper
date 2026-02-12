@@ -1,15 +1,10 @@
 import { Button } from "@student-helper/ui/web/primitives/button";
-import { ThemeToggle } from "./components/theme-toggle";
+import { Header } from "@/widgets/header";
 
 export default function Home() {
   return (
     <div className="flex min-h-svh flex-col">
-      <header className="flex items-center justify-between px-6 py-4">
-        <span className="text-lg font-semibold tracking-tight">
-          Student Helper
-        </span>
-        <ThemeToggle />
-      </header>
+      <Header />
 
       <main className="flex flex-1 flex-col items-center justify-center gap-6 px-6 text-center">
         <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">

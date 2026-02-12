@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { getBackendUrl } from "./lib/env";
+import { getBackendUrl } from "@/shared/lib/env";
 
 async function hasValidSession(request: NextRequest): Promise<boolean> {
   const cookie = request.headers.get("cookie");
