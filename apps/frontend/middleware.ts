@@ -1,16 +1,8 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { getBackendUrl } from "./lib/env";
 
 const AUTH_COOKIE_SUFFIX = "sh.session_token";
-const DEFAULT_BACKEND_URL = "http://localhost:3001";
-
-function getBackendUrl() {
-  return (
-    process.env.BACKEND_URL ??
-    process.env.NEXT_PUBLIC_BACKEND_URL ??
-    DEFAULT_BACKEND_URL
-  );
-}
 
 async function hasValidSession(request: NextRequest): Promise<boolean> {
   const cookie = request.headers.get("cookie");
