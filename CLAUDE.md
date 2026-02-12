@@ -51,15 +51,21 @@ docker compose down      # Stop all services
 
 ### Adding shadcn/ui components
 
-The UI package uses shadcn/ui (new-york style) with Radix primitives. The `components.json` is in `packages/ui/`. To add a component, run the shadcn CLI from that directory.
+The UI package uses shadcn/ui (new-york style) with Radix primitives. The `components.json` is in `packages/ui/`.
+
+**IMPORTANT: When you need a UI component, ALWAYS first search the [shadcn/ui registry](https://ui.shadcn.com) for an existing component before writing one from scratch.** This is the correct workflow:
+
+1. Search shadcn/ui for the needed component (e.g. dialog, dropdown-menu, tabs, toast, etc.)
+2. Install it from `packages/ui/`: `cd packages/ui && bunx shadcn@latest add <component>`
+3. Import and use via subpath exports: `@student-helper/ui/web/primitives/<component>`
 
 ## Architecture
 
 **Turborepo monorepo** with these workspaces:
 
-- **`apps/frontend`** — Next.js 16 app (React 19). The main web application. Uses App Router.
+- **`apps/frontend`** — Next.js 16 app (React 19). The main web application. Uses App Router. UI components come from `@student-helper/ui` — always check shadcn/ui for ready-made components before building custom ones.
 - **`apps/backend`** — Elysia server (default port 3001, configurable via `BACKEND_PORT`). Modular architecture under `src/modules/`. Uses Drizzle ORM + Postgres, Better Auth, BullMQ + Redis, Centrifugo for realtime.
-- **`packages/ui`** (`@student-helper/ui`) — Shared component library built on Radix UI + Tailwind CSS 4 + Class Variance Authority. Contains:
+- **`packages/ui`** (`@student-helper/ui`) — Shared component library built on Radix UI + Tailwind CSS 4 + Class Variance Authority. **Uses shadcn/ui as the primary source of components** — search and install components via `bunx shadcn@latest add <name>` from this directory before writing custom ones. Contains:
   - `src/web/primitives/` — Low-level shadcn-style components (button, input, dialog, dropdown-menu, code)
   - `src/web/components/` — Higher-level composed components (card)
   - `src/web/hooks/` — React hooks (useMediaQuery, useLockBodyScroll)
