@@ -1,36 +1,41 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/create-next-app).
+# Frontend
 
-## Getting Started
+Next.js 16 app using [Feature-Sliced Design](https://feature-sliced.design/) (FSD) architecture.
 
-First, run the development server:
+## FSD Layer Hierarchy
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```
+src/
+├── app/        ← Composition root (providers, global setup)
+├── widgets/    ← Large autonomous UI blocks (e.g. Header)
+├── features/   ← User interactions (e.g. auth forms, theme toggle)
+├── entities/   ← Business entities (e.g. User)
+└── shared/     ← Infrastructure, no business logic (api, auth, lib, config)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Note: `pages/` layer is omitted because `src/pages/` conflicts with Next.js Pages Router detection.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Each layer can only import from layers **below** it. This is enforced by `eslint-plugin-boundaries`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load Inter, a custom Google Font.
+## Adding a New Slice
 
-## Learn More
+1. Create `src/<layer>/<slice-name>/` directory
+2. Add internal segments: `ui/`, `model/`, `lib/`, `api/` as needed
+3. Create `index.ts` barrel export — this is the slice's public API
+4. Only import from the barrel, never from internal segments
 
-To learn more about Next.js, take a look at the following resources:
+## Import Rules
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `@/*` maps to `./src/*` (tsconfig paths)
+- Use `@/shared/auth/auth-client` (not barrel) because client/server must stay separate
+- Use `@student-helper/ui/...` subpath exports for UI components (no wrapper layer)
+- `app/` (Next.js router) and `middleware.ts` are outside FSD — they can import from any `src/` layer
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Commands
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+bun run --filter frontend dev        # Dev server
+bun run --filter frontend build      # Production build
+bun run --filter frontend lint       # ESLint with FSD boundary checks
+bun run --filter frontend typecheck  # Type checking
+```
