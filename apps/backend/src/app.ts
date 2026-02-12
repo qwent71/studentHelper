@@ -18,6 +18,13 @@ export function createApp() {
       status: "ok",
       timestamp: new Date().toISOString(),
     }))
+    // After magic-link verification Better Auth redirects to a relative
+    // callbackURL resolved against the backend origin (e.g. /app).
+    // Bounce the browser to the frontend so the user lands on the right site.
+    .get("/app", ({ redirect }) => redirect(`${env.FRONTEND_URL}/app`))
+    .get("/app/*", ({ redirect, params }) =>
+      redirect(`${env.FRONTEND_URL}/app/${params["*"]}`)
+    )
     .use(authPlugin)
     .use(accountRoutes)
     .use(chatRoutes)

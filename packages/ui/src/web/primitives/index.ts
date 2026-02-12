@@ -30,3 +30,10 @@ export {
   DropdownMenuTrigger,
 } from "./dropdown-menu.js";
 export { Code } from "./code.js";
+export {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+  tabsListVariants,
+} from "./tabs.js";
