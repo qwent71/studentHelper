@@ -30,7 +30,6 @@ export function LoginForm() {
   const [magicEmail, setMagicEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [magicLinkSent, setMagicLinkSent] = useState(false);
 
   async function handlePasswordSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -73,7 +72,7 @@ export function LoginForm() {
       return;
     }
 
-    setMagicLinkSent(true);
+    router.push(`/auth/magic-link-sent?email=${encodeURIComponent(magicEmail)}`);
   }
 
   return (
@@ -92,13 +91,37 @@ export function LoginForm() {
         {error && <FieldError>{error}</FieldError>}
 
         <Tabs
-          defaultValue="password"
+          defaultValue="magic-link"
           onValueChange={() => setError(null)}
         >
           <TabsList className="w-full">
-            <TabsTrigger value="password">Пароль</TabsTrigger>
             <TabsTrigger value="magic-link">Без пароля</TabsTrigger>
+            <TabsTrigger value="password">Пароль</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="magic-link">
+              <form onSubmit={handleMagicLinkSubmit}>
+                <FieldGroup>
+                  <Field>
+                    <FieldLabel htmlFor="magic-email">Email</FieldLabel>
+                    <Input
+                      id="magic-email"
+                      type="email"
+                      placeholder="you@example.com"
+                      value={magicEmail}
+                      onChange={(e) => setMagicEmail(e.target.value)}
+                      required
+                      autoComplete="email"
+                    />
+                  </Field>
+                  <Field>
+                    <Button type="submit" className="w-full" disabled={loading}>
+                      {loading ? "Отправка..." : "Отправить ссылку для входа"}
+                    </Button>
+                  </Field>
+                </FieldGroup>
+              </form>
+          </TabsContent>
 
           <TabsContent value="password">
             <form onSubmit={handlePasswordSubmit}>
@@ -133,36 +156,6 @@ export function LoginForm() {
                 </Field>
               </FieldGroup>
             </form>
-          </TabsContent>
-
-          <TabsContent value="magic-link">
-            {magicLinkSent ? (
-              <div className="text-muted-foreground rounded-md border p-4 text-center text-sm">
-                Ссылка отправлена на <strong>{magicEmail}</strong>
-              </div>
-            ) : (
-              <form onSubmit={handleMagicLinkSubmit}>
-                <FieldGroup>
-                  <Field>
-                    <FieldLabel htmlFor="magic-email">Email</FieldLabel>
-                    <Input
-                      id="magic-email"
-                      type="email"
-                      placeholder="you@example.com"
-                      value={magicEmail}
-                      onChange={(e) => setMagicEmail(e.target.value)}
-                      required
-                      autoComplete="email"
-                    />
-                  </Field>
-                  <Field>
-                    <Button type="submit" className="w-full" disabled={loading}>
-                      {loading ? "Отправка..." : "Отправить ссылку для входа"}
-                    </Button>
-                  </Field>
-                </FieldGroup>
-              </form>
-            )}
           </TabsContent>
         </Tabs>
 
