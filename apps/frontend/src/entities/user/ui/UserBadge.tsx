@@ -1,7 +1,10 @@
 import Image from "next/image";
 import type { User } from "../model/types";
 
+const passthroughLoader = ({ src }: { src: string }) => src;
+
 export function UserBadge({ user }: { user: Pick<User, "name" | "image"> }) {
+  const isLocalImage = Boolean(user.image?.startsWith("/"));
   const initials = user.name
     .split(" ")
     .map((part) => part[0])
@@ -18,6 +21,8 @@ export function UserBadge({ user }: { user: Pick<User, "name" | "image"> }) {
           width={32}
           height={32}
           className="size-8 rounded-full object-cover"
+          loader={isLocalImage ? undefined : passthroughLoader}
+          unoptimized={!isLocalImage}
         />
       ) : (
         <div className="bg-muted text-muted-foreground flex size-8 items-center justify-center rounded-full text-xs font-medium">

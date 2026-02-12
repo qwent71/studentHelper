@@ -41,7 +41,16 @@ export default [
         {
           patterns: [
             {
-              group: ["@/features/*/*/ui/*", "@/features/*/*/model/*", "@/features/*/*/lib/*", "@/features/*/*/api/*"],
+              group: [
+                "@/features/*/ui/*",
+                "@/features/*/model/*",
+                "@/features/*/lib/*",
+                "@/features/*/api/*",
+                "@/features/*/*/ui/*",
+                "@/features/*/*/model/*",
+                "@/features/*/*/lib/*",
+                "@/features/*/*/api/*",
+              ],
               message: "Import from the slice public API (index.ts), not from internal segments.",
             },
             {
