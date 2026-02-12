@@ -22,5 +22,6 @@ export const authGuardPlugin = new Elysia({ name: "auth-guard" })
   });
 
 export const authPlugin = new Elysia({ name: "auth" })
-  .mount("/api/auth", auth.handler)
+  .all("/api/auth", ({ request }) => auth.handler(request))
+  .all("/api/auth/*", ({ request }) => auth.handler(request))
   .use(authGuardPlugin);
