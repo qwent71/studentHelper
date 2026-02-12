@@ -3,8 +3,17 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { GraduationCap } from "lucide-react";
 import { Button } from "@student-helper/ui/web/primitives/button";
 import { Input } from "@student-helper/ui/web/primitives/input";
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+  FieldSeparator,
+} from "@student-helper/ui/web/primitives/field";
 import { signUp } from "@/shared/auth/auth-client";
 
 export function SignupForm() {
@@ -36,77 +45,76 @@ export function SignupForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2 text-center">
-        <h1 className="text-2xl font-bold tracking-tight">Create account</h1>
-        <p className="text-muted-foreground text-sm">
-          Enter your details to get started
-        </p>
-      </div>
-
-      {error && (
-        <div className="bg-destructive/10 text-destructive rounded-md px-3 py-2 text-sm">
-          {error}
-        </div>
-      )}
-
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <label htmlFor="name" className="text-sm font-medium">
-            Name
-          </label>
-          <Input
-            id="name"
-            type="text"
-            placeholder="Your name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-            autoComplete="name"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label htmlFor="email" className="text-sm font-medium">
-            Email
-          </label>
-          <Input
-            id="email"
-            type="email"
-            placeholder="you@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            autoComplete="email"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label htmlFor="password" className="text-sm font-medium">
-            Password
-          </label>
-          <Input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            minLength={8}
-            autoComplete="new-password"
-          />
-        </div>
-
-        <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? "Creating account..." : "Sign up"}
-        </Button>
-      </div>
-
-      <p className="text-muted-foreground text-center text-sm">
-        Already have an account?{" "}
-        <Link href="/auth/login" className="text-primary hover:underline">
-          Sign in
-        </Link>
-      </p>
-    </form>
+    <div className="flex flex-col gap-6">
+      <form onSubmit={handleSubmit}>
+        <FieldGroup>
+          <div className="flex flex-col items-center gap-2 text-center">
+            <div className="flex size-8 items-center justify-center rounded-md">
+              <GraduationCap className="size-6" />
+            </div>
+            <h1 className="text-xl font-bold">Создать аккаунт</h1>
+            <FieldDescription>
+              Уже есть аккаунт?{" "}
+              <Link href="/auth/login">Войти</Link>
+            </FieldDescription>
+          </div>
+          {error && <FieldError>{error}</FieldError>}
+          <Field>
+            <FieldLabel htmlFor="name">Имя</FieldLabel>
+            <Input
+              id="name"
+              type="text"
+              placeholder="Ваше имя"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              autoComplete="name"
+            />
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="email">Email</FieldLabel>
+            <Input
+              id="email"
+              type="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              autoComplete="email"
+            />
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="password">Пароль</FieldLabel>
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={8}
+              autoComplete="new-password"
+            />
+            <FieldDescription>Минимум 8 символов</FieldDescription>
+          </Field>
+          <Field>
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? "Создание..." : "Зарегистрироваться"}
+            </Button>
+          </Field>
+          <FieldSeparator>Или</FieldSeparator>
+          <Field>
+            <Button variant="outline" type="button" className="w-full">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path
+                  d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"
+                  fill="currentColor"
+                />
+              </svg>
+              Войти через Google
+            </Button>
+          </Field>
+        </FieldGroup>
+      </form>
+    </div>
   );
 }
