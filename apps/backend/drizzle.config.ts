@@ -1,6 +1,13 @@
+import { resolve } from "path";
 import { defineConfig } from "@drepkovsky/drizzle-migrations";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
+
+if (!process.env.DATABASE_URL) {
+  try {
+    process.loadEnvFile(resolve(process.cwd(), "../../.env"));
+  } catch {}
+}
 
 export default defineConfig({
   dialect: "postgresql",
