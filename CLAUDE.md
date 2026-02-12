@@ -13,6 +13,8 @@ bun run build            # Build all workspaces
 bun run lint             # Lint all workspaces (--max-warnings 0)
 bun run typecheck        # Type-check all workspaces
 bun run format           # Prettier format all ts/tsx/md files
+bun run test             # Run tests via Turborepo
+bun run tests            # Run backend unit + integration tests
 bun run backend:dev      # Start backend only
 bun run workers:dev      # Start BullMQ workers only
 ```
@@ -57,7 +59,7 @@ The UI package uses shadcn/ui (new-york style) with Radix primitives. The `compo
   - `src/tokens/` — Design tokens (colors, spacing, typography, shadows, z-index)
   - `src/types/` — Shared TypeScript types for components
   - `src/utils/cn.ts` — `cn()` utility (clsx + tailwind-merge)
-- **`packages/contracts`** (`@student-helper/contracts`) — Shared Zod schemas and types (streaming events, API contracts)
+- **`packages/contracts`** (`@student-helper/contracts`) — Shared Zod schemas and types. Contains streaming event schemas (token, thinking, tool_call, tool_result, done, error) with `StreamEvent` discriminated union and parse helpers.
 - **`packages/config`** (`@student-helper/config`) — Shared configuration (env schema, defaults)
 - **`packages/eslint`** (`@student-helper/eslint`) — Shared ESLint flat configs (base, Next.js, React)
 - **`packages/tsconfig`** (`@student-helper/tsconfig`) — Shared tsconfig bases
@@ -81,6 +83,8 @@ Each module lives in `apps/backend/src/modules/<name>/` with three files:
 - `repo.ts` — DB access layer (Drizzle queries)
 
 Modules: `account`, `chat`, `uploads`, `textbook`, `family`, `rag`, `admin`, `centrifugo`.
+
+> Note: `centrifugo` only has `routes.ts` (no services/repo) since it's a thin token endpoint.
 
 ### App factory
 
@@ -110,12 +114,30 @@ Modules: `account`, `chat`, `uploads`, `textbook`, `family`, `rag`, `admin`, `ce
 - **Centrifugo** for WebSocket realtime. Token endpoint at `GET /centrifugo/token` (HS256 JWT via `jose`).
 - Config in `centrifugo.json` at repo root.
 
+## Testing
+
+Backend has unit and integration tests using **Bun's built-in test runner** (`bun:test`).
+
+```bash
+bun run tests                        # Run all backend tests (unit + integration)
+bun run --filter backend test:unit        # Unit tests only
+bun run --filter backend test:integration # Integration tests (starts Docker containers)
+```
+
+Integration tests use a custom testkit (`apps/backend/test/testkit/`) that:
+- Spins up ephemeral Docker containers (postgres, redis) with random ports
+- Runs Drizzle migrations via `drizzle-test.config.ts`
+- Provides helpers: `createTestApp()`, `request()`, `resetAll()`, `getDb()`, `getRedis()`
+- Preload file (`test/setup/integration.preload.ts`) handles lifecycle (beforeAll/beforeEach/afterAll)
+- Skip with `RUN_INTEGRATION=0`
+
 ## Environment Variables
 
 Defined in `packages/config/src/env.ts` (Zod schema). Key vars:
 
 | Variable | Default |
 |---|---|
+| `NODE_ENV` | `development` |
 | `BACKEND_PORT` | `3001` |
 | `FRONTEND_PORT` | `3000` |
 | `BACKEND_URL` | `http://localhost:3001` |
@@ -125,6 +147,7 @@ Defined in `packages/config/src/env.ts` (Zod schema). Key vars:
 | `REDIS_URL` | `redis://localhost:6379` |
 | `CENTRIFUGO_TOKEN_SECRET` | `centrifugo-dev-secret` |
 | `CENTRIFUGO_URL` | `http://localhost:8800` |
+| `OPENAI_API_KEY` | *(optional)* |
 
 ## Docker Compose
 

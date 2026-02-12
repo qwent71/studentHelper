@@ -28,3 +28,5 @@ export function createApp() {
     .use(adminRoutes)
     .use(centrifugoRoutes);
 }
+
+export type App = ReturnType<typeof createApp>;
