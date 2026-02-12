@@ -27,12 +27,19 @@ bun run --filter frontend build        # Build web app only
 bun run --filter @student-helper/ui lint    # Lint UI package only
 ```
 
-### Database commands (from `apps/backend/`)
+### Database & Migrations (from `apps/backend/`)
+
+**IMPORTANT: NEVER manually create or edit migration files. ALWAYS use these CLI commands to manage migrations.**
 
 ```bash
-bun run db:generate      # Generate Drizzle migrations from schema
-bun run db:migrate       # Apply migrations to Postgres
-bun run db:studio        # Open Drizzle Studio GUI
+bun run migrations:generate -n <name>  # Generate TS migration (up/down) from schema diff
+bun run migrations:up                  # Apply pending migrations
+bun run migrations:down                # Rollback last batch
+bun run migrations:down --batch <n>    # Rollback to specific batch
+bun run migrations:status              # Show migration status
+bun run migrations:fresh               # Rollback ALL migrations
+bun run migrations:refresh             # Rollback ALL then re-apply
+bun run db:studio                      # Open Drizzle Studio GUI
 ```
 
 ### Infrastructure
@@ -93,8 +100,8 @@ Modules: `account`, `chat`, `uploads`, `textbook`, `family`, `rag`, `admin`, `ce
 ### Database
 
 - **Drizzle ORM** with `postgres.js` driver. Schema in `src/db/schema.ts`, client in `src/db/index.ts`.
-- **Drizzle Kit** config at `apps/backend/drizzle.config.ts` (outside `src/`, not typechecked). Migrations output to `apps/backend/drizzle/`.
-- Tables: `user`, `session`, `account`, `verification` (Better Auth), `chat`, `message` (app).
+- **Migrations** via `@drepkovsky/drizzle-migrations` with up/down support. Config at `apps/backend/drizzle.config.ts` (outside `src/`, not typechecked). TS migration files in `apps/backend/src/migrations/`.
+- Tables: `user`, `session`, `account`, `verification` (Better Auth), `chat`, `message` (app), `organization`, `member`, `invitation` (org).
 - All columns use snake_case in Postgres (e.g. `email_verified`, `user_id`).
 
 ### Authentication
@@ -126,7 +133,7 @@ bun run --filter backend test:integration # Integration tests (starts Docker con
 
 Integration tests use a custom testkit (`apps/backend/test/testkit/`) that:
 - Spins up ephemeral Docker containers (postgres, redis) with random ports
-- Runs Drizzle migrations via `drizzle-test.config.ts`
+- Runs migrations via `drizzle-migrations up`
 - Provides helpers: `createTestApp()`, `request()`, `resetAll()`, `getDb()`, `getRedis()`
 - Preload file (`test/setup/integration.preload.ts`) handles lifecycle (beforeAll/beforeEach/afterAll)
 - Skip with `RUN_INTEGRATION=0`

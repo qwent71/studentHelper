@@ -23,7 +23,7 @@ beforeAll(async () => {
   // Run Drizzle migrations against the test database
   console.log("[preload] Running migrations...");
   const result = Bun.spawnSync(
-    ["bunx", "drizzle-kit", "migrate", "--config=drizzle-test.config.ts"],
+    ["bunx", "drizzle-migrations", "up"],
     {
       cwd: backendRoot,
       env: process.env as Record<string, string>,

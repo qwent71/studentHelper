@@ -15,12 +15,16 @@ bun run --filter backend test:integration # Integration tests (starts Docker con
 bun run --filter backend tests            # Run both unit + integration tests
 ```
 
-### Database (run from apps/backend/)
+### Database & Migrations (run from apps/backend/)
 
 ```bash
-bun run db:generate   # Generate Drizzle migrations from schema
-bun run db:migrate    # Apply migrations to Postgres
-bun run db:studio     # Open Drizzle Studio GUI
+bun run migrations:generate -n <name>  # Generate TS migration (up/down) from schema diff
+bun run migrations:up                  # Apply pending migrations
+bun run migrations:down                # Rollback last batch
+bun run migrations:status              # Show migration status
+bun run migrations:fresh               # Rollback ALL migrations
+bun run migrations:refresh             # Rollback ALL then re-apply
+bun run db:studio                      # Open Drizzle Studio GUI
 ```
 
 ## Project Structure
@@ -34,6 +38,7 @@ src/
 ├── db/
 │   ├── index.ts          # Drizzle client (postgres.js driver)
 │   └── schema.ts         # Full database schema
+├── migrations/           # TS migration files (up/down) managed by drizzle-migrations
 ├── plugins/
 │   └── auth.ts           # Auth macros (auth, adminAuth) + mount /api/auth/*
 ├── redis/
@@ -144,10 +149,14 @@ import postgres from "postgres";
 
 ### Migrations
 
+Uses `@drepkovsky/drizzle-migrations` for up/down migration support.
+
 - Config: `drizzle.config.ts` (project root, outside src/, not typechecked)
-- Test config: `drizzle-test.config.ts` (used by integration test preload)
-- Output: `drizzle/` directory
-- Generate then migrate: `bun run db:generate && bun run db:migrate`
+- Migration files: `src/migrations/` (TypeScript with `up()` and `down()` exports)
+- Generate new migration: `bun run migrations:generate -n <name>`
+- Apply: `bun run migrations:up`
+- Rollback: `bun run migrations:down`
+- Tracking table: `drizzle_migrations` in public schema
 
 ## Queues & Workers
 
@@ -188,7 +197,7 @@ bun run test:integration    # bun test ./test/integration --preload ./test/setup
 ```
 
 The preload file orchestrates the full lifecycle:
-1. **beforeAll**: Starts ephemeral Docker containers (postgres:17-alpine, redis:7-alpine) with random ports, applies env vars, runs Drizzle migrations via `drizzle-test.config.ts`
+1. **beforeAll**: Starts ephemeral Docker containers (postgres:17-alpine, redis:7-alpine) with random ports, applies env vars, runs migrations via `drizzle-migrations up`
 2. **beforeEach**: `resetAll()` — truncates all DB tables + flushes Redis
 3. **afterAll**: Closes DB/Redis connections, stops containers
 
@@ -221,4 +230,4 @@ Via `@student-helper/config`:
 
 - **TypeScript**: Extends `@student-helper/tsconfig/base.json`. Strict mode, ESNext modules, Bundler resolution.
 - **ESLint**: Uses `@student-helper/eslint/base` shared flat config. Zero warnings policy.
-- **Drizzle Kit**: `drizzle.config.ts` at project root (not in src/, not typechecked).
+- **Drizzle Migrations**: `drizzle.config.ts` at project root (not in src/, not typechecked). Uses `@drepkovsky/drizzle-migrations` defineConfig.
