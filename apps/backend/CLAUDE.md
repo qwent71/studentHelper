@@ -5,11 +5,14 @@ Elysia server with modular architecture. Uses Drizzle ORM + Postgres, Better Aut
 ## Commands
 
 ```bash
-bun run --filter backend dev         # Dev server with watch (port from BACKEND_PORT, default 3001)
-bun run --filter backend build       # Build to dist/ (bun target)
-bun run --filter backend workers:dev # Start BullMQ workers with watch (separate process)
-bun run --filter backend lint        # ESLint (--max-warnings 0)
-bun run --filter backend typecheck   # tsc --noEmit
+bun run --filter backend dev              # Dev server with watch (port from BACKEND_PORT, default 3001)
+bun run --filter backend build            # Build to dist/ (bun target)
+bun run --filter backend workers:dev      # Start BullMQ workers with watch (separate process)
+bun run --filter backend lint             # ESLint (--max-warnings 0)
+bun run --filter backend typecheck        # tsc --noEmit
+bun run --filter backend test:unit        # Unit tests (no infra needed)
+bun run --filter backend test:integration # Integration tests (starts Docker containers)
+bun run --filter backend tests            # Run both unit + integration tests
 ```
 
 ### Database (run from apps/backend/)
@@ -42,20 +45,39 @@ src/
     ├── account/           # /account — user account management
     ├── admin/             # /admin — admin panel (adminAuth macro)
     ├── chat/              # /chat — chat conversations
-    ├── centrifugo/        # /centrifugo — WebSocket token generation
+    ├── centrifugo/        # /centrifugo — WebSocket token (routes.ts only, no services/repo)
     ├── family/            # /family — family features
     ├── rag/               # /rag — RAG pipeline
     ├── textbook/          # /textbook — textbook management
     └── uploads/           # /uploads — file uploads
+
+test/
+├── setup/
+│   └── integration.preload.ts  # Preload: start containers, migrations, lifecycle hooks
+├── testkit/
+│   ├── index.ts                # Re-exports all testkit utilities
+│   ├── containers.ts           # Docker container management (postgres, redis)
+│   ├── appFactory.ts           # createTestApp() — dynamic import of app
+│   ├── db.ts                   # getDb(), resetDb(), closeDb()
+│   ├── redis.ts                # getRedis(), resetRedis(), closeRedis()
+│   ├── http.ts                 # request() helper for HTTP calls
+│   ├── env.ts                  # applyTestEnv() — sets process.env for tests
+│   └── reset.ts                # resetAll() — truncate tables + flush redis
+├── unit/
+│   └── smoke.test.ts           # Unit test example
+└── integration/
+    └── smoke.test.ts           # Integration test example
 ```
 
 ## Module Convention
 
-Each module in `src/modules/<name>/` has three files:
+Each module in `src/modules/<name>/` typically has three files:
 
 - **`routes.ts`** — Elysia plugin with prefix: `new Elysia({ prefix: "/<name>" })`
 - **`services.ts`** — Business logic functions
 - **`repo.ts`** — Database access layer (Drizzle queries)
+
+Simple modules (e.g. `centrifugo`) may only have `routes.ts` if they don't need separate service/repo layers.
 
 Register new modules in `src/app.ts` via `.use(moduleRoutes)`.
 
@@ -70,6 +92,10 @@ Register new modules in `src/app.ts` via `.use(moduleRoutes)`.
 - Cookie prefix: `sh`, httpOnly, sameSite: lax
 
 ### Auth macros (`src/plugins/auth.ts`)
+
+File exports two plugins:
+- **`authGuardPlugin`** (name: `"auth-guard"`) — defines the two macros
+- **`authPlugin`** (name: `"auth"`) — mounts `/api/auth/*` handler and includes `authGuardPlugin`
 
 Two macros available for route protection:
 
@@ -119,6 +145,7 @@ import postgres from "postgres";
 ### Migrations
 
 - Config: `drizzle.config.ts` (project root, outside src/, not typechecked)
+- Test config: `drizzle-test.config.ts` (used by integration test preload)
 - Output: `drizzle/` directory
 - Generate then migrate: `bun run db:generate && bun run db:migrate`
 
@@ -141,6 +168,40 @@ import postgres from "postgres";
 2. `GET /health` — `{ status: "ok", timestamp }`
 3. Auth plugin (mounts `/api/auth/*` + macros)
 4. All module routes
+
+## Testing
+
+Uses **Bun's built-in test runner** (`bun:test`). Two test levels:
+
+### Unit tests
+
+```bash
+bun run test:unit    # bun test ./test/unit
+```
+
+No infrastructure needed. Place tests in `test/unit/`.
+
+### Integration tests
+
+```bash
+bun run test:integration    # bun test ./test/integration --preload ./test/setup/integration.preload.ts
+```
+
+The preload file orchestrates the full lifecycle:
+1. **beforeAll**: Starts ephemeral Docker containers (postgres:17-alpine, redis:7-alpine) with random ports, applies env vars, runs Drizzle migrations via `drizzle-test.config.ts`
+2. **beforeEach**: `resetAll()` — truncates all DB tables + flushes Redis
+3. **afterAll**: Closes DB/Redis connections, stops containers
+
+Skip integration tests with `RUN_INTEGRATION=0`.
+
+### Testkit utilities (`test/testkit/`)
+
+- `createTestApp()` — Creates an Elysia app instance (dynamic import to defer env loading)
+- `request(app, { method?, path, body?, headers? })` — HTTP request helper
+- `getDb()` / `resetDb()` / `closeDb()` — Database access & cleanup
+- `getRedis()` / `resetRedis()` / `closeRedis()` — Redis access & cleanup
+- `resetAll()` — Parallel truncate all tables + flush Redis
+- `applyTestEnv({ postgresUrl, redisUrl })` — Sets test environment variables
 
 ## Environment Variables
 
