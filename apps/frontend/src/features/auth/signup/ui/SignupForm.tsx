@@ -113,6 +113,15 @@ export function SignupForm() {
               Войти через Google
             </Button>
           </Field>
+          <p className="text-muted-foreground text-center text-xs">
+            Продолжая, вы соглашаетесь с{" "}
+            <Link href="/terms" className="underline underline-offset-4 hover:text-foreground">
+              Условиями использования
+            </Link>{" "}и{" "}
+            <Link href="/privacy" className="underline underline-offset-4 hover:text-foreground">
+              Политикой конфиденциальности
+            </Link>.
+          </p>
         </FieldGroup>
       </form>
     </div>

@@ -63,6 +63,7 @@ export function LoginForm() {
 
     const { error: magicError } = await signIn.magicLink({
       email: magicEmail,
+      callbackURL: "/app",
     });
 
     setLoading(false);
@@ -96,7 +97,7 @@ export function LoginForm() {
         >
           <TabsList className="w-full">
             <TabsTrigger value="password">Пароль</TabsTrigger>
-            <TabsTrigger value="magic-link">Magic Link</TabsTrigger>
+            <TabsTrigger value="magic-link">Без пароля</TabsTrigger>
           </TabsList>
 
           <TabsContent value="password">
@@ -156,7 +157,7 @@ export function LoginForm() {
                   </Field>
                   <Field>
                     <Button type="submit" className="w-full" disabled={loading}>
-                      {loading ? "Отправка..." : "Отправить ссылку"}
+                      {loading ? "Отправка..." : "Отправить ссылку для входа"}
                     </Button>
                   </Field>
                 </FieldGroup>
@@ -177,6 +178,15 @@ export function LoginForm() {
             Войти через Google
           </Button>
         </Field>
+        <p className="text-muted-foreground text-center text-xs">
+          Продолжая, вы соглашаетесь с{" "}
+          <Link href="/terms" className="underline underline-offset-4 hover:text-foreground">
+            Условиями использования
+          </Link>{" "}и{" "}
+          <Link href="/privacy" className="underline underline-offset-4 hover:text-foreground">
+            Политикой конфиденциальности
+          </Link>.
+        </p>
       </FieldGroup>
     </div>
   );
