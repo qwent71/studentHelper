@@ -29,10 +29,13 @@ bun run --filter @student-helper/ui lint    # Lint UI package only
 
 ### Database & Migrations (from `apps/backend/`)
 
+**IMPORTANT: NEVER manually create or edit migration files. ALWAYS use these CLI commands to manage migrations.**
+
 ```bash
 bun run migrations:generate -n <name>  # Generate TS migration (up/down) from schema diff
 bun run migrations:up                  # Apply pending migrations
 bun run migrations:down                # Rollback last batch
+bun run migrations:down --batch <n>    # Rollback to specific batch
 bun run migrations:status              # Show migration status
 bun run migrations:fresh               # Rollback ALL migrations
 bun run migrations:refresh             # Rollback ALL then re-apply
