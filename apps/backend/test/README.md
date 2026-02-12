@@ -54,7 +54,7 @@ Integration tests use `--preload ./test/setup/integration.preload.ts` which:
 
 1. Starts Postgres and Redis containers via Docker (once per test run)
 2. Sets `DATABASE_URL`, `REDIS_URL`, and other env vars
-3. Runs Drizzle migrations against the test database
+3. Runs migrations via `drizzle-migrations up` against the test database
 4. Resets DB and Redis before each test (`TRUNCATE CASCADE` + `FLUSHALL`)
 5. Closes connections and stops containers after all tests complete
 
