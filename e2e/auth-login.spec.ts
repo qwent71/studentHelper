@@ -10,7 +10,7 @@ test.afterAll(async () => {
   await closeConnection();
 });
 
-test.describe("Login flow", () => {
+test.describe("Login flow @smoke", () => {
   test("UI-AUTH-04: login with callbackUrl redirects to that URL", async ({
     page,
     request,

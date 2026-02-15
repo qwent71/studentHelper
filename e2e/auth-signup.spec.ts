@@ -10,7 +10,7 @@ test.afterAll(async () => {
   await closeConnection();
 });
 
-test.describe("Signup flow", () => {
+test.describe("Signup flow @smoke", () => {
   test("should register via UI and redirect to /app", async ({ page }) => {
     const user = testUser();
 
