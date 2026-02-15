@@ -59,6 +59,18 @@ The UI package uses shadcn/ui (new-york style) with Radix primitives. The `compo
 2. Install it from `packages/ui/`: `cd packages/ui && bunx shadcn@latest add <component>`
 3. Import and use via subpath exports: `@student-helper/ui/web/primitives/<component>`
 
+## Validation After Changes
+
+**IMPORTANT: After making code changes, ALWAYS validate your work before considering the task complete.**
+
+1. **Type-check**: `bun run typecheck` — must pass with no errors
+2. **Lint**: `bun run lint` — must pass with zero warnings
+3. **Tests**: `bun run tests` — run backend unit + integration tests; all must pass
+4. **E2E tests** (if auth or critical flows were changed): `bun run e2e` — Playwright tests; all must pass
+5. **Build** (if frontend was changed): `bun run --filter frontend build` — must succeed
+
+If any check fails, fix the issues before finishing. Do NOT leave broken code.
+
 ## Architecture
 
 **Turborepo monorepo** with these workspaces:
@@ -129,10 +141,12 @@ Modules: `account`, `chat`, `uploads`, `textbook`, `family`, `rag`, `admin`, `ce
 
 ## Testing
 
-Backend has unit and integration tests using **Bun's built-in test runner** (`bun:test`).
+### Backend (unit + integration)
+
+Uses **Bun's built-in test runner** (`bun:test`).
 
 ```bash
-bun run tests                        # Run all backend tests (unit + integration)
+bun run tests                             # Run all backend tests (unit + integration)
 bun run --filter backend test:unit        # Unit tests only
 bun run --filter backend test:integration # Integration tests (starts Docker containers)
 ```
@@ -143,6 +157,21 @@ Integration tests use a custom testkit (`apps/backend/test/testkit/`) that:
 - Provides helpers: `createTestApp()`, `request()`, `resetAll()`, `getDb()`, `getRedis()`
 - Preload file (`test/setup/integration.preload.ts`) handles lifecycle (beforeAll/beforeEach/afterAll)
 - Skip with `RUN_INTEGRATION=0`
+
+### E2E (Playwright)
+
+End-to-end tests in `e2e/` directory using **Playwright** (Chromium). Test specs: `auth-login`, `auth-signup`, `auth-middleware`. Helpers in `e2e/helpers/`.
+
+```bash
+bun run e2e              # Run all e2e tests (requires Docker, starts backend + frontend automatically)
+bun run e2e:ui           # Run e2e tests with interactive UI
+bun run e2e:report       # View last test report
+./scripts/e2e.sh         # Full setup script: docker up, migrations, install browsers, run tests
+```
+
+- Playwright auto-starts backend (`localhost:3001`) and frontend (`localhost:3000`) via `webServer` config
+- Requires Docker running (postgres, redis) and migrations applied
+- Screenshots/video/traces saved on failure
 
 ## Environment Variables
 
