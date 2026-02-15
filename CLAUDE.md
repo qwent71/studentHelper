@@ -68,6 +68,7 @@ The UI package uses shadcn/ui (new-york style) with Radix primitives. The `compo
 3. **Tests**: `bun run tests` — run backend unit + integration tests; all must pass
 4. **E2E tests** (if auth or critical flows were changed): `bun run e2e` — Playwright tests; all must pass
 5. **Build** (if frontend was changed): `bun run --filter frontend build` — must succeed
+6. **Visual check via MCP Playwright** (if frontend UI was changed/created): open the page in the browser using `browser_navigate`, take a snapshot (`browser_snapshot`) or screenshot (`browser_take_screenshot`), and visually verify that the UI renders correctly — layout, spacing, text, interactive states. Fix any visual issues before finishing.
 
 If any check fails, fix the issues before finishing. Do NOT leave broken code.
 
