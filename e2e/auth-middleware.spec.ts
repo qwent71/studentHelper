@@ -10,7 +10,7 @@ test.afterAll(async () => {
   await closeConnection();
 });
 
-test.describe("Middleware redirects", () => {
+test.describe("Middleware redirects @smoke", () => {
   test("UI-AUTH-01: unauthenticated user visiting /app is redirected to login", async ({
     page,
   }) => {
