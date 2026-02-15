@@ -158,6 +158,57 @@ describe("Negative login scenarios", () => {
   });
 });
 
+describe("Session", () => {
+  it("should return user via get-session with valid cookie", async () => {
+    const app = await createTestApp();
+
+    // Register
+    const signUpRes = await request(app, {
+      method: "POST",
+      path: "/api/auth/sign-up/email",
+      body: testUser,
+    });
+
+    const cookies = extractCookies(signUpRes);
+
+    // Get session
+    const res = await request(app, {
+      path: "/api/auth/get-session",
+      headers: { Cookie: cookies },
+    });
+
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.user).toBeDefined();
+    expect(data.user.email).toBe(testUser.email);
+  });
+
+  it("should return null session without cookie", async () => {
+    const app = await createTestApp();
+
+    const res = await request(app, {
+      path: "/api/auth/get-session",
+    });
+
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    // Better Auth returns null body when no session exists
+    expect(data === null || data?.user == null).toBe(true);
+  });
+});
+
+describe("Protected endpoints", () => {
+  it("should reject centrifugo token request without cookie", async () => {
+    const app = await createTestApp();
+
+    const res = await request(app, {
+      path: "/centrifugo/token",
+    });
+
+    expect(res.status).toBe(401);
+  });
+});
+
 describe("Session / Logout", () => {
   it("should invalidate session on sign-out", async () => {
     const app = await createTestApp();
