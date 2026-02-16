@@ -61,15 +61,18 @@ The UI package uses shadcn/ui (new-york style) with Radix primitives. The `compo
 
 ## Validation After Changes
 
-**IMPORTANT: After making code changes, ALWAYS validate your work before considering the task complete.**
+**Only run checks relevant to the code you actually changed.** Do NOT run all checks every time.
 
-1. **Type-check**: `bun run typecheck` — must pass with no errors
-2. **Lint**: `bun run lint` — must pass with zero warnings
-3. **Tests**: `bun run tests` — run backend unit + integration tests; all must pass
-4. **Frontend tests** (if frontend logic was changed): `bun run --filter frontend test` — Vitest tests; all must pass
-5. **E2E tests** (if auth or critical flows were changed): `bun run e2e` — Playwright tests; all must pass
-6. **Build** (if frontend was changed): `bun run --filter frontend build` — must succeed
-7. **Visual check via MCP Playwright** (if frontend UI was changed/created): open the page in the browser using `browser_navigate`, take a snapshot (`browser_snapshot`) or screenshot (`browser_take_screenshot`), and visually verify that the UI renders correctly — layout, spacing, text, interactive states. Fix any visual issues before finishing.
+| What changed | What to run |
+|---|---|
+| Backend code (`apps/backend/`) | `bun run --filter @student-helper/backend typecheck`, `bun run --filter @student-helper/backend lint`, `bun run tests` |
+| Frontend code (`apps/frontend/`) | `bun run --filter frontend typecheck`, `bun run --filter frontend lint`, `bun run --filter frontend test` |
+| Frontend UI (visual) | Visual check via MCP Playwright (`browser_navigate` + `browser_snapshot`/`browser_take_screenshot`) |
+| UI package (`packages/ui/`) | `bun run --filter @student-helper/ui typecheck`, `bun run --filter @student-helper/ui lint` |
+| Auth or critical flows | `bun run e2e` |
+| Frontend before deploy/PR | `bun run --filter frontend build` |
+
+Do NOT run `bun run typecheck` / `bun run lint` (full monorepo) or `bun run tests` (backend) when only frontend/UI code changed, and vice versa. Do NOT run build or E2E unless specifically needed.
 
 If any check fails, fix the issues before finishing. Do NOT leave broken code.
 

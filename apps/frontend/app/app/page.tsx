@@ -1,10 +1,18 @@
 export default function AppPage() {
   return (
-    <div className="flex min-h-svh items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground mt-2">Coming soon</p>
-      </div>
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {["Recent Chats", "Study Progress", "Upcoming Tasks"].map((title) => (
+        <div
+          key={title}
+          className="bg-card text-card-foreground rounded-xl border p-6 shadow-sm"
+        >
+          <h3 className="text-sm font-medium">{title}</h3>
+          <p className="text-muted-foreground mt-2 text-2xl font-bold">
+            &mdash;
+          </p>
+          <p className="text-muted-foreground mt-1 text-xs">Coming soon</p>
+        </div>
+      ))}
     </div>
   );
 }
