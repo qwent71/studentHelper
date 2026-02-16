@@ -18,7 +18,7 @@ bun run test:integration   # Run integration tests only (Docker required)
 
 ## Requirements
 
-- **Docker** is required for integration tests (containers are managed via `docker run`)
+- **Docker** is required for integration tests (containers are managed via `testcontainers`)
 - Unit tests run without Docker
 
 ## Environment Variables
@@ -26,6 +26,7 @@ bun run test:integration   # Run integration tests only (Docker required)
 | Variable | Description |
 |---|---|
 | `RUN_INTEGRATION=0` | Skip integration tests (useful without Docker) |
+| `TESTCONTAINERS_RYUK_DISABLED` | Defaults to `true` in test setup for Bun stability (can be overridden) |
 
 ## Architecture
 
@@ -39,7 +40,7 @@ test/
 │   └── integration.preload.ts    # Starts containers, runs migrations, resets state
 └── testkit/                      # Shared test utilities
     ├── index.ts                  # Re-exports everything
-    ├── containers.ts             # Docker container lifecycle (Postgres + Redis)
+    ├── containers.ts             # Testcontainers lifecycle (Postgres + Redis)
     ├── env.ts                    # Test environment variables
     ├── db.ts                     # Test DB client + resetDb()
     ├── redis.ts                  # Test Redis client + resetRedis()
@@ -52,7 +53,7 @@ test/
 
 Integration tests use `--preload ./test/setup/integration.preload.ts` which:
 
-1. Starts Postgres and Redis containers via Docker (once per test run)
+1. Starts Postgres and Redis containers via `testcontainers` (once per test run)
 2. Sets `DATABASE_URL`, `REDIS_URL`, and other env vars
 3. Runs migrations via `drizzle-migrations up` against the test database
 4. Resets DB and Redis before each test (`TRUNCATE CASCADE` + `FLUSHALL`)
@@ -95,8 +96,8 @@ describe("my feature", () => {
 });
 ```
 
-### Note on Docker vs Testcontainers
+### Bun + Testcontainers
 
-We use direct `docker run` commands instead of the `testcontainers` library because of a
-[known incompatibility](https://github.com/testcontainers/testcontainers-node/issues/974)
-between Bun's HTTP stream handling and testcontainers' port-wait strategy.
+Integration tests use `testcontainers` directly. For Bun stability, test setup
+defaults `TESTCONTAINERS_RYUK_DISABLED=true` and relies on explicit
+`stopContainers()` cleanup in lifecycle hooks.

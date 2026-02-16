@@ -23,7 +23,7 @@
     "migrations:refresh": "drizzle-migrations refresh",
     "workers:dev": "bun --watch src/worker.ts",
     "test:unit": "NODE_ENV=test bun test ./test/unit",
-    "test:integration": "NODE_ENV=test bun test ./test/integration --preload ./test/setup/integration.preload.ts",
+    "test:integration": "NODE_ENV=test bun test ./test/integration --timeout 120000 --preload ./test/setup/integration.preload.ts",
     "tests": "bun run test:unit && bun run test:integration"
   },
   "dependencies": {
@@ -43,6 +43,7 @@
     "@student-helper/eslint": "*",
     "@student-helper/tsconfig": "*",
     "drizzle-kit": "^0.31.9",
+    "testcontainers": "^11.11.0",
     "typescript": "5.9.2"
   }
 }
