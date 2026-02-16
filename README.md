@@ -23,3 +23,14 @@ bun run build     # Build all workspaces
 bun run lint      # Lint all workspaces
 bun run typecheck # Type-check all workspaces
 ```
+
+### Docker
+
+```bash
+docker compose -f docker/docker-compose.yml up -d --build
+docker compose -f docker/docker-compose.yml down
+```
+
+### Product Docs
+
+- [Lerio Business Specification v1.1](docs/lerio-business-spec-v1.1.md)

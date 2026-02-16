@@ -4,6 +4,7 @@ const nextDistDir = process.env.NEXT_DIST_DIR;
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: "standalone",
   transpilePackages: [
     "@student-helper/ui",
     "@student-helper/contracts",
