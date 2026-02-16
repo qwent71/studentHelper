@@ -45,8 +45,8 @@ bun run db:studio                      # Open Drizzle Studio GUI
 ### Infrastructure
 
 ```bash
-docker compose up -d     # Start Postgres, Redis, Centrifugo
-docker compose down      # Stop all services
+docker compose -f docker/docker-compose.yml up -d     # Start Postgres, Redis, Centrifugo
+docker compose -f docker/docker-compose.yml down       # Stop all services
 ```
 
 ### Adding shadcn/ui components
@@ -66,9 +66,10 @@ The UI package uses shadcn/ui (new-york style) with Radix primitives. The `compo
 1. **Type-check**: `bun run typecheck` — must pass with no errors
 2. **Lint**: `bun run lint` — must pass with zero warnings
 3. **Tests**: `bun run tests` — run backend unit + integration tests; all must pass
-4. **E2E tests** (if auth or critical flows were changed): `bun run e2e` — Playwright tests; all must pass
-5. **Build** (if frontend was changed): `bun run --filter frontend build` — must succeed
-6. **Visual check via MCP Playwright** (if frontend UI was changed/created): open the page in the browser using `browser_navigate`, take a snapshot (`browser_snapshot`) or screenshot (`browser_take_screenshot`), and visually verify that the UI renders correctly — layout, spacing, text, interactive states. Fix any visual issues before finishing.
+4. **Frontend tests** (if frontend logic was changed): `bun run --filter frontend test` — Vitest tests; all must pass
+5. **E2E tests** (if auth or critical flows were changed): `bun run e2e` — Playwright tests; all must pass
+6. **Build** (if frontend was changed): `bun run --filter frontend build` — must succeed
+7. **Visual check via MCP Playwright** (if frontend UI was changed/created): open the page in the browser using `browser_navigate`, take a snapshot (`browser_snapshot`) or screenshot (`browser_take_screenshot`), and visually verify that the UI renders correctly — layout, spacing, text, interactive states. Fix any visual issues before finishing.
 
 If any check fails, fix the issues before finishing. Do NOT leave broken code.
 
@@ -76,19 +77,19 @@ If any check fails, fix the issues before finishing. Do NOT leave broken code.
 
 **Turborepo monorepo** with these workspaces:
 
-- **`apps/frontend`** — Next.js 16 app (React 19). The main web application. Uses App Router. UI components come from `@student-helper/ui` — always check shadcn/ui for ready-made components before building custom ones.
+- **`apps/frontend`** — Next.js 16 app (React 19). Uses App Router + Feature-Sliced Design (FSD). UI components come from `@student-helper/ui` — always check shadcn/ui for ready-made components before building custom ones.
 - **`apps/backend`** — Elysia server (default port 3001, configurable via `BACKEND_PORT`). Modular architecture under `src/modules/`. Uses Drizzle ORM + Postgres, Better Auth, BullMQ + Redis, Centrifugo for realtime.
 - **`packages/ui`** (`@student-helper/ui`) — Shared component library built on Radix UI + Tailwind CSS 4 + Class Variance Authority. **Uses shadcn/ui as the primary source of components** — search and install components via `bunx shadcn@latest add <name>` from this directory before writing custom ones. Contains:
-  - `src/web/primitives/` — Low-level shadcn-style components (button, input, dialog, dropdown-menu, code)
+  - `src/web/primitives/` — Low-level shadcn-style components (button, input, dialog, dropdown-menu, field, label, separator, tabs, code)
   - `src/web/components/` — Higher-level composed components (card)
   - `src/web/hooks/` — React hooks (useMediaQuery, useLockBodyScroll)
   - `src/tokens/` — Design tokens (colors, spacing, typography, shadows, z-index)
   - `src/types/` — Shared TypeScript types for components
   - `src/utils/cn.ts` — `cn()` utility (clsx + tailwind-merge)
-- **`packages/contracts`** (`@student-helper/contracts`) — Shared Zod schemas and types. Contains streaming event schemas (token, thinking, tool_call, tool_result, done, error) with `StreamEvent` discriminated union and parse helpers.
-- **`packages/config`** (`@student-helper/config`) — Shared configuration (env schema, defaults)
-- **`packages/eslint`** (`@student-helper/eslint`) — Shared ESLint flat configs (base, Next.js, React)
-- **`packages/tsconfig`** (`@student-helper/tsconfig`) — Shared tsconfig bases
+- **`packages/contracts`** (`@student-helper/contracts`) — Shared Zod schemas and types. Contains streaming event schemas (token, thinking, tool_call, tool_result, done, error) with `StreamEvent` discriminated union and parse helpers. Exports via `@student-helper/contracts/stream`.
+- **`packages/config`** (`@student-helper/config`) — Shared configuration (env schema with custom `.env` loader, defaults)
+- **`packages/eslint`** (`@student-helper/eslint`) — Shared ESLint flat configs (`base`, `next-js`, `react-internal`)
+- **`packages/tsconfig`** (`@student-helper/tsconfig`) — Shared tsconfig bases (`base.json`, `nextjs.json`, `react-library.json`)
 
 ## Key Patterns
 
@@ -114,7 +115,14 @@ Modules: `account`, `chat`, `uploads`, `textbook`, `family`, `rag`, `admin`, `ce
 
 ### App factory
 
-`apps/backend/src/app.ts` exports `createApp()` which assembles the Elysia app: CORS, auth plugin, all module routes. `src/index.ts` calls `createApp().listen()`.
+`apps/backend/src/app.ts` exports `createApp()` which assembles the Elysia app:
+1. CORS (origin: `FRONTEND_URL`, credentials: true)
+2. `GET /health` — `{ status: "ok", timestamp }`
+3. `GET /app` and `GET /app/*` — redirects to frontend (handles Better Auth magic-link callback redirection)
+4. Auth plugin (mounts `/api/auth/*` + macros)
+5. All module routes
+
+`src/index.ts` calls `createApp().listen()`.
 
 ### Database
 
@@ -125,15 +133,16 @@ Modules: `account`, `chat`, `uploads`, `textbook`, `family`, `rag`, `admin`, `ce
 
 ### Authentication
 
-- **Better Auth** with email+password. Config in `src/auth.ts`.
-- Elysia plugin in `src/plugins/auth.ts`: mounts handler at `/api/auth/*` and provides `auth` macro for protected routes.
+- **Better Auth** with email+password, magic links, organization (multi-tenancy), admin (role-based). Config in `src/auth.ts`.
+- Elysia plugin in `src/plugins/auth.ts`: mounts handler at `/api/auth/*` and provides `auth`/`adminAuth` macros for protected routes.
 - **Macro usage**: In Elysia macros, use `status(code, body)` (not `error()`). Example: `return status(401, { error: "Unauthorized" })`.
+- Cookie prefix: `sh`, httpOnly, sameSite: lax.
 
 ### Queues & Workers
 
 - **BullMQ** queues defined in `src/queues/index.ts`: `messageGenerationQueue`, `autoArchiveQueue`.
 - **Workers** in `src/queues/workers.ts`, started via separate entry `src/worker.ts` (`bun run workers:dev`).
-- **Redis** connection in `src/redis/index.ts` using `ioredis`.
+- **Redis** connection in `src/redis/index.ts` using `ioredis` with `maxRetriesPerRequest: null`.
 
 ### Realtime
 
@@ -153,25 +162,41 @@ bun run --filter backend test:integration # Integration tests (starts Docker con
 ```
 
 Integration tests use a custom testkit (`apps/backend/test/testkit/`) that:
-- Spins up ephemeral Docker containers (postgres, redis) with random ports
+- Spins up ephemeral Docker containers (postgres, redis) via **testcontainers** with random ports
 - Runs migrations via `drizzle-migrations up`
 - Provides helpers: `createTestApp()`, `request()`, `resetAll()`, `getDb()`, `getRedis()`
 - Preload file (`test/setup/integration.preload.ts`) handles lifecycle (beforeAll/beforeEach/afterAll)
+- Integration test timeout: 120 seconds
 - Skip with `RUN_INTEGRATION=0`
+
+### Frontend (unit)
+
+Uses **Vitest** with jsdom.
+
+```bash
+bun run --filter frontend test        # Run all frontend tests
+bun run --filter frontend test:watch  # Watch mode
+```
+
+Tests in `src/**/*.test.{ts,tsx}`, setup in `src/test/setup.ts`.
 
 ### E2E (Playwright)
 
-End-to-end tests in `e2e/` directory using **Playwright** (Chromium). Test specs: `auth-login`, `auth-signup`, `auth-middleware`. Helpers in `e2e/helpers/`.
+End-to-end tests in `e2e/` directory using **Playwright** (Chromium). Test specs: `auth-login`, `auth-signup`, `auth-middleware`, `core-regression`.
 
 ```bash
-bun run e2e              # Run all e2e tests (requires Docker, starts backend + frontend automatically)
+bun run e2e              # Run all e2e tests (spins up Docker containers + backend + frontend automatically)
+bun run e2e:smoke        # Run only @smoke-tagged tests
+bun run e2e:regression   # Run only @regression-tagged tests
 bun run e2e:ui           # Run e2e tests with interactive UI
 bun run e2e:report       # View last test report
-./scripts/e2e.sh         # Full setup script: docker up, migrations, install browsers, run tests
 ```
 
-- Playwright auto-starts backend (`localhost:3001`) and frontend (`localhost:3000`) via `webServer` config
-- Requires Docker running (postgres, redis) and migrations applied
+The `scripts/run-e2e.ts` orchestration script:
+- Starts ephemeral Docker containers (postgres, redis) via **testcontainers** with random ports
+- Runs migrations with retry logic
+- Picks random ports for frontend (42000-45999) and backend (46000-48999) unless overridden
+- Playwright auto-starts backend and frontend via `webServer` config
 - Screenshots/video/traces saved on failure
 
 ## Environment Variables
@@ -194,7 +219,13 @@ Defined in `packages/config/src/env.ts` (Zod schema). Key vars:
 
 ## Docker Compose
 
-Services in `docker-compose.yml`:
-- **postgres** (17-alpine) — port 5432, user/pass/db: `studenthelper`
-- **redis** (7-alpine) — port 6379
+Docker config lives in `docker/` directory. Services in `docker/docker-compose.yml`:
+
+**Infrastructure (for local dev)**:
+- **postgres** (17-alpine) — port 5432, user/pass/db: `studenthelper`, healthcheck enabled
+- **redis** (7-alpine) — port 6379, healthcheck enabled
 - **centrifugo** (v6) — ports 8800→8000, 8801→8001
+
+**Application (for containerized deployment)**:
+- **backend** — builds from `docker/Dockerfile.backend`, port 3001, depends on postgres+redis+centrifugo
+- **frontend** — builds from `docker/Dockerfile.frontend`, port 3000, depends on backend

@@ -11,7 +11,7 @@ bun run --filter backend workers:dev      # Start BullMQ workers with watch (sep
 bun run --filter backend lint             # ESLint (--max-warnings 0)
 bun run --filter backend typecheck        # tsc --noEmit
 bun run --filter backend test:unit        # Unit tests (no infra needed)
-bun run --filter backend test:integration # Integration tests (starts Docker containers)
+bun run --filter backend test:integration # Integration tests (starts Docker containers, 120s timeout)
 bun run --filter backend tests            # Run both unit + integration tests
 ```
 
@@ -32,7 +32,7 @@ bun run db:studio                      # Open Drizzle Studio GUI
 ```
 src/
 ├── index.ts              # Entry: createApp().listen(BACKEND_PORT)
-├── app.ts                # App factory: CORS, health check, auth plugin, all module routes
+├── app.ts                # App factory: CORS, health check, /app redirects, auth plugin, all module routes
 ├── auth.ts               # Better Auth config (email+password, magicLink, organization, admin)
 ├── worker.ts             # Worker entry point (imports queues/workers.ts)
 ├── db/
@@ -61,7 +61,7 @@ test/
 │   └── integration.preload.ts  # Preload: start containers, migrations, lifecycle hooks
 ├── testkit/
 │   ├── index.ts                # Re-exports all testkit utilities
-│   ├── containers.ts           # Docker container management (postgres, redis)
+│   ├── containers.ts           # Docker container management (postgres, redis) via testcontainers
 │   ├── appFactory.ts           # createTestApp() — dynamic import of app
 │   ├── db.ts                   # getDb(), resetDb(), closeDb()
 │   ├── redis.ts                # getRedis(), resetRedis(), closeRedis()
@@ -71,7 +71,9 @@ test/
 ├── unit/
 │   └── smoke.test.ts           # Unit test example
 └── integration/
-    └── smoke.test.ts           # Integration test example
+    ├── smoke.test.ts           # Integration test example
+    ├── auth.test.ts            # Auth integration tests
+    └── admin.test.ts           # Admin integration tests
 ```
 
 ## Module Convention
@@ -100,7 +102,7 @@ Register new modules in `src/app.ts` via `.use(moduleRoutes)`.
 
 File exports two plugins:
 - **`authGuardPlugin`** (name: `"auth-guard"`) — defines the two macros
-- **`authPlugin`** (name: `"auth"`) — mounts `/api/auth/*` handler and includes `authGuardPlugin`
+- **`authPlugin`** (name: `"auth"`) — mounts Better Auth handler + includes `authGuardPlugin`
 
 Two macros available for route protection:
 
@@ -124,19 +126,19 @@ return status(403, { error: "Forbidden" });
 ### Schema (`src/db/schema.ts`)
 
 **Better Auth tables** (text PKs, snake_case columns):
-- `user` — id, name, email (unique), emailVerified, image, role, banned, banReason, banExpires
-- `session` — id, userId (FK), token (unique), expiresAt, ipAddress, userAgent, impersonatedBy, activeOrganizationId
-- `account` — id, userId (FK), accountId, providerId, accessToken, refreshToken, password
-- `verification` — id, identifier, value, expiresAt
+- `user` — id, name, email (unique), emailVerified, image, role, banned, banReason, banExpires, createdAt, updatedAt
+- `session` — id, userId (FK), token (unique), expiresAt, ipAddress, userAgent, impersonatedBy, activeOrganizationId, createdAt, updatedAt
+- `account` — id, userId (FK), accountId, providerId, accessToken, refreshToken, idToken, accessTokenExpiresAt, refreshTokenExpiresAt, scope, password, createdAt, updatedAt
+- `verification` — id, identifier, value, expiresAt, createdAt, updatedAt
 
 **Organization tables**:
-- `organization` — id, name, slug (unique), logo
-- `member` — id, organizationId (FK), userId (FK), role
-- `invitation` — id, organizationId (FK), email, role, status, inviterId (FK)
+- `organization` — id, name, slug (unique), logo, createdAt, updatedAt
+- `member` — id, organizationId (FK), userId (FK), role (default: "member"), createdAt
+- `invitation` — id, organizationId (FK), email, role, status (default: "pending"), expiresAt, inviterId (FK), createdAt
 
 **App tables**:
-- `chat` — id (uuid), userId (FK), title, archivedAt
-- `message` — id (uuid), chatId (FK), role (enum: user/assistant/system), content
+- `chat` — id (uuid), userId (FK), title, createdAt, updatedAt, archivedAt
+- `message` — id (uuid), chatId (FK), role (enum: user/assistant/system), content, createdAt
 
 All FKs cascade on delete. Indexes on FK columns.
 
@@ -158,6 +160,14 @@ Uses `@drepkovsky/drizzle-migrations` for up/down migration support.
 - Rollback: `bun run migrations:down`
 - Tracking table: `drizzle_migrations` in public schema
 
+## App Assembly Order (`src/app.ts`)
+
+1. CORS (origin: `FRONTEND_URL`, credentials: true)
+2. `GET /health` — `{ status: "ok", timestamp }`
+3. `GET /app` and `GET /app/*` — redirect to `FRONTEND_URL` (handles Better Auth magic-link callback)
+4. Auth plugin (mounts `/api/auth/*` + macros)
+5. All module routes
+
 ## Queues & Workers
 
 - **Queues** (`src/queues/index.ts`): `messageGenerationQueue`, `autoArchiveQueue`
@@ -170,13 +180,6 @@ Uses `@drepkovsky/drizzle-migrations` for up/down migration support.
 - `GET /centrifugo/token` (auth required) — returns HS256 JWT
 - JWT claims: `{ sub: user.id }`, expires in 5 minutes
 - Signed with `CENTRIFUGO_TOKEN_SECRET` via `jose` library
-
-## App Assembly Order (`src/app.ts`)
-
-1. CORS (origin: `FRONTEND_URL`, credentials: true)
-2. `GET /health` — `{ status: "ok", timestamp }`
-3. Auth plugin (mounts `/api/auth/*` + macros)
-4. All module routes
 
 ## Testing
 
@@ -193,11 +196,11 @@ No infrastructure needed. Place tests in `test/unit/`.
 ### Integration tests
 
 ```bash
-bun run test:integration    # bun test ./test/integration --preload ./test/setup/integration.preload.ts
+bun run test:integration    # bun test ./test/integration --timeout 120000 --preload ./test/setup/integration.preload.ts
 ```
 
 The preload file orchestrates the full lifecycle:
-1. **beforeAll**: Starts ephemeral Docker containers (postgres:17-alpine, redis:7-alpine) with random ports, applies env vars, runs migrations via `drizzle-migrations up`
+1. **beforeAll**: Starts ephemeral Docker containers (postgres:17-alpine, redis:7-alpine) via **testcontainers** with random ports, applies env vars, runs migrations via `drizzle-migrations up`
 2. **beforeEach**: `resetAll()` — truncates all DB tables + flushes Redis
 3. **afterAll**: Closes DB/Redis connections, stops containers
 
@@ -205,6 +208,7 @@ Skip integration tests with `RUN_INTEGRATION=0`.
 
 ### Testkit utilities (`test/testkit/`)
 
+- `startContainers()` / `stopContainers()` — Docker container lifecycle via testcontainers
 - `createTestApp()` — Creates an Elysia app instance (dynamic import to defer env loading)
 - `request(app, { method?, path, body?, headers? })` — HTTP request helper
 - `getDb()` / `resetDb()` / `closeDb()` — Database access & cleanup

@@ -9,6 +9,8 @@ bun run --filter frontend dev        # Dev server (port from FRONTEND_PORT, defa
 bun run --filter frontend build      # Production build
 bun run --filter frontend lint       # ESLint with FSD boundary checks (--max-warnings 0)
 bun run --filter frontend typecheck  # next typegen && tsc --noEmit
+bun run --filter frontend test       # Run unit tests (Vitest)
+bun run --filter frontend test:watch # Run tests in watch mode
 ```
 
 ## Project Structure
@@ -16,27 +18,39 @@ bun run --filter frontend typecheck  # next typegen && tsc --noEmit
 ```
 apps/frontend/
 ├── app/                    # Next.js App Router (routing layer, thin — delegates to src/)
-│   ├── layout.tsx          # Root layout (fonts, Providers)
+│   ├── layout.tsx          # Root layout (Geist fonts, Providers)
 │   ├── page.tsx            # Home page → uses Header widget
-│   ├── globals.css         # Tailwind + theme CSS variables
-│   ├── fonts/              # Local font files
-│   ├── auth/               # Auth route pages (import from features)
+│   ├── globals.css         # Imports @student-helper/ui/globals.css + @source directive
+│   ├── fonts/              # Geist Sans + Geist Mono variable fonts
+│   ├── auth/               # Auth route pages
+│   │   ├── layout.tsx      # Auth pages layout (centered container)
+│   │   ├── page.tsx        # Redirects to /auth/login
+│   │   ├── login/          # Login page with LoginForm feature
+│   │   ├── signup/         # Signup page with SignupForm feature
+│   │   └── magic-link-sent/ # Magic link confirmation page
 │   └── app/                # Protected app pages
-├── middleware.ts            # Route protection (imports from shared)
+│       └── page.tsx        # Dashboard (placeholder)
+├── middleware.ts            # Route protection (async session validation via backend)
 ├── src/                    # FSD layers
 │   ├── app/                # Composition root
-│   │   └── providers/      # ThemeProvider, future providers
+│   │   └── providers/      # ThemeProvider (next-themes, "use client")
 │   ├── widgets/            # Autonomous UI blocks
 │   │   └── header/         # App header with theme toggle
 │   ├── features/           # User interactions
-│   │   ├── toggle-theme/   # Theme switcher
-│   │   └── auth/           # Login & signup forms
+│   │   ├── toggle-theme/   # Theme switcher (Light/Dark/System dropdown)
+│   │   └── auth/           # Auth features
+│   │       ├── login/      # Login form (password + magic link tabs)
+│   │       ├── signup/     # Signup form (name + email + password)
+│   │       └── magic-link-sent/ # Magic link confirmation with resend timer
 │   ├── entities/           # Business domain
 │   │   └── user/           # User type + UserBadge
 │   └── shared/             # Infrastructure (no business logic)
 │       ├── api/            # Eden treaty client
 │       ├── auth/           # Better Auth clients (client & server separate)
 │       └── lib/            # Env utilities
+├── src/test/
+│   └── setup.ts            # Vitest setup (jsdom, cleanup, next/image mock)
+└── vitest.config.ts        # Vitest config (jsdom, @/ alias, src/**/*.test.{ts,tsx})
 ```
 
 ## FSD Import Rules
@@ -84,11 +98,28 @@ import { cn } from "@student-helper/ui/utils/cn";
 2. Create `index.ts` barrel export
 3. Import from other files via the barrel only
 
+## Testing
+
+Uses **Vitest** with jsdom environment.
+
+- Tests collocated with source: `src/**/*.test.{ts,tsx}`
+- Setup file: `src/test/setup.ts` (provides jsdom, @testing-library cleanup, next/image mock)
+- Alias: `@` → `./src` (matches tsconfig paths)
+- Libraries: `@testing-library/react`, `@testing-library/jest-dom`, `@testing-library/user-event`
+
+## Middleware
+
+`middleware.ts` handles route protection:
+- Protected routes: `/app/*`, `/admin/*` — redirects to `/auth/login?callbackUrl=...` if unauthenticated
+- Auth routes: `/auth/*` — redirects to `/app` if already authenticated
+- Session validation via fetch to backend `GET /api/auth/get-session`
+
 ## Configuration
 
 - **TypeScript**: `@/*` → `./src/*`. Extends `@student-helper/tsconfig/nextjs.json`.
 - **ESLint**: `@student-helper/eslint/next-js` + `eslint-plugin-boundaries` for FSD rules.
-- **next.config.js**: transpilePackages for monorepo packages.
+- **next.config.js**: `output: "standalone"`, transpilePackages for monorepo packages (`@student-helper/ui`, `@student-helper/contracts`, `@student-helper/config`).
+- **PostCSS**: Re-exports from `@student-helper/ui/postcss.config` (uses `@tailwindcss/postcss`).
 
 ## Environment Variables
 

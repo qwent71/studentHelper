@@ -15,14 +15,39 @@ bun run --filter @student-helper/ui typecheck  # tsc --noEmit
 src/
 ├── web/
 │   ├── styles/globals.css        # Tailwind imports + theme CSS variables (light/dark)
-│   ├── primitives/               # Low-level shadcn components (button, input, dialog, dropdown-menu, code)
-│   ├── components/               # Higher-level composed components (card)
-│   └── hooks/                    # React hooks (use-media-query, use-lock-body-scroll)
-├── tokens/                       # Design tokens (colors, spacing, typography, shadows, z-index)
-├── types/                        # Shared TS types (Size, Variant, BaseComponentProps)
+│   ├── primitives/               # Low-level shadcn components
+│   │   ├── button.tsx            # Button with CVA variants
+│   │   ├── input.tsx             # Text input
+│   │   ├── dialog.tsx            # Modal dialog (14 sub-exports)
+│   │   ├── dropdown-menu.tsx     # Dropdown menu (15 sub-exports)
+│   │   ├── tabs.tsx              # Tabs (5 sub-exports + tabsListVariants)
+│   │   ├── field.tsx             # Form field system (10 sub-exports) — NOT in barrel
+│   │   ├── label.tsx             # Label (Radix wrapper) — NOT in barrel
+│   │   ├── separator.tsx         # Separator (Radix wrapper) — NOT in barrel
+│   │   ├── code.tsx              # Inline code component
+│   │   └── index.ts             # Barrel exports (button, input, dialog, dropdown-menu, tabs, code)
+│   ├── components/               # Higher-level composed components
+│   │   ├── card.tsx
+│   │   └── index.ts
+│   └── hooks/                    # React hooks
+│       ├── use-media-query.ts
+│       ├── use-lock-body-scroll.ts
+│       └── index.ts
+├── tokens/                       # Design tokens
+│   ├── colors.ts                 # Color tokens → CSS variables
+│   ├── spacing.ts                # Spacing scale (0–24)
+│   ├── typography.ts             # fontFamily (sans, mono), fontSize (xs–6xl)
+│   ├── shadows.ts                # Shadow utilities (none, sm, md, lg, xl)
+│   ├── z-index.ts                # z-index constants (dropdown: 50, modal: 100, toast: 150, tooltip: 200)
+│   └── index.ts                  # Exports all tokens + radii
+├── types/
+│   ├── component.ts              # Size, Variant enums + BaseComponentProps
+│   └── index.ts
 └── utils/
     └── cn.ts                     # cn() = clsx + tailwind-merge
 ```
+
+> **Note**: `field.tsx`, `label.tsx`, and `separator.tsx` exist as primitives but are NOT exported from `primitives/index.ts`. Import them directly by file name: `@student-helper/ui/web/primitives/field`.
 
 ## Adding shadcn/ui Components
 
@@ -30,13 +55,13 @@ The `components.json` configures the shadcn CLI with aliases pointing to this pa
 
 ### Running the CLI
 
-Run `npx shadcn@latest add <component>` **from `packages/ui/`**:
+Run `bunx shadcn@latest add <component>` **from `packages/ui/`**:
 
 ```bash
 cd packages/ui
-npx shadcn@latest add sheet
-npx shadcn@latest add tabs
-npx shadcn@latest add tooltip
+bunx shadcn@latest add sheet
+bunx shadcn@latest add tabs
+bunx shadcn@latest add tooltip
 ```
 
 The CLI will:
@@ -95,6 +120,7 @@ Subpath exports in `package.json`:
 | Import path | Maps to |
 |---|---|
 | `@student-helper/ui/globals.css` | `src/web/styles/globals.css` |
+| `@student-helper/ui/postcss.config` | `postcss.config.mjs` |
 | `@student-helper/ui/web/primitives/*` | `src/web/primitives/*.tsx` |
 | `@student-helper/ui/web/components/*` | `src/web/components/*.tsx` |
 | `@student-helper/ui/web/hooks/*` | `src/web/hooks/*.ts` |
@@ -139,6 +165,7 @@ Higher-level components in `src/web/components/` compose primitives and are expo
 - **Base color** — neutral
 - **Animations** — via `tw-animate-css`
 - **Custom variant**: `@custom-variant dark (&:is(.dark *))`
+- **Font variables**: `--font-sans`, `--font-mono` (Geist fonts)
 
 ### Key CSS variables
 
