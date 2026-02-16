@@ -6,6 +6,9 @@
 - Нельзя считать задачу завершённой, пока проверки не пройдены успешно.
 - Проверки должны покрывать все релевантные уровни тестирования: unit, component, integration, e2e.
 - Нельзя ограничиваться только одним типом тестов (например, только UI-тестами или только backend-тестами).
+- Перед завершением любой задачи обязательно запускать прогоны сборки.
+- Логи каждого запуска (`typecheck`, `lint`, `test`, `tests`, `e2e`, `build` и другие релевантные проверки) нужно просматривать полностью, от начала до конца.
+- Нельзя ориентироваться только на exit code или последние строки вывода: предупреждения и ошибки в логах должны быть проверены и устранены (или явно объяснены в отчёте).
 
 ## Frontend Validation
 - Если задача связана с фронтендом (создание нового UI или изменение существующего), обязательно использовать MCP Playwright для валидации отображения и поведения интерфейса.
@@ -19,7 +22,7 @@
 - Задача по фронтенд-компоненту не считается завершённой, пока тесты компонента не добавлены/обновлены и не проходят успешно.
 
 ## Mandatory Test Run Set
-- Перед завершением задачи выполнять полный набор проверок: `bun run test`, `bun run tests`, `bun run e2e`.
+- Перед завершением задачи выполнять полный набор проверок: `bun run test`, `bun run tests`, `bun run e2e`, `bun run build`.
 - Если изменение затрагивает UI, допускается предварительный быстрый прогон `bun run e2e:smoke` и целевой `bun run e2e:regression`, но они не заменяют полный `bun run e2e`.
 
 ---
@@ -93,10 +96,12 @@ The UI package uses shadcn/ui (new-york style) with Radix primitives. The `compo
 2. **Lint**: `bun run lint` — must pass with zero warnings
 3. **Tests**: `bun run tests` — run backend unit + integration tests; all must pass
 4. **E2E tests** (if auth or critical flows were changed): `bun run e2e` — Playwright tests; all must pass
-5. **Build** (if frontend was changed): `bun run --filter frontend build` — must succeed
-6. **Visual check via MCP Playwright** (if frontend UI was changed/created): open the page in the browser using `browser_navigate`, take a snapshot (`browser_snapshot`) or screenshot (`browser_take_screenshot`), and visually verify that the UI renders correctly — layout, spacing, text, interactive states. Fix any visual issues before finishing.
+5. **Build (mandatory for every task)**: `bun run build` — must succeed
+6. **Build** (if frontend was changed): `bun run --filter frontend build` — must succeed
+7. **Visual check via MCP Playwright** (if frontend UI was changed/created): open the page in the browser using `browser_navigate`, take a snapshot (`browser_snapshot`) or screenshot (`browser_take_screenshot`), and visually verify that the UI renders correctly — layout, spacing, text, interactive states. Fix any visual issues before finishing.
 
 If any check fails, fix the issues before finishing. Do NOT leave broken code.
+Also review the complete logs of every validation command, not just summary lines.
 
 ## Architecture
 

@@ -1,15 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { registerUser, testUser } from "./helpers/auth";
 import { BACKEND_URL, FRONTEND_URL } from "./helpers/env";
-import { resetTestData, closeConnection } from "./helpers/db";
-
-test.beforeEach(async () => {
-  await resetTestData();
-});
-
-test.afterAll(async () => {
-  await closeConnection();
-});
 
 test.describe("Middleware redirects @smoke", () => {
   test("UI-AUTH-01: unauthenticated user visiting /app is redirected to login", async ({

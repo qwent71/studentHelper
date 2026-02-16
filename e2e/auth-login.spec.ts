@@ -1,15 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { testUser } from "./helpers/auth";
 import { BACKEND_URL } from "./helpers/env";
-import { resetTestData, closeConnection } from "./helpers/db";
-
-test.beforeEach(async () => {
-  await resetTestData();
-});
-
-test.afterAll(async () => {
-  await closeConnection();
-});
 
 test.describe("Login flow @smoke", () => {
   test("UI-AUTH-04: login with callbackUrl redirects to that URL", async ({
