@@ -6,7 +6,9 @@ import postgres from "postgres";
 if (!process.env.DATABASE_URL) {
   try {
     process.loadEnvFile(resolve(process.cwd(), "../../.env"));
-  } catch {}
+  } catch {
+    // Ignore when .env is absent; CI/tests inject env externally.
+  }
 }
 
 export default defineConfig({

@@ -13,14 +13,17 @@ export function applyTestEnv({
   postgresUrl: string;
   redisUrl: string;
 }) {
+  const frontendPort = process.env.TEST_FRONTEND_PORT ?? "3100";
+  const backendPort = process.env.TEST_BACKEND_PORT ?? "3101";
+
   process.env.NODE_ENV = "test";
   process.env.DATABASE_URL = postgresUrl;
   process.env.REDIS_URL = redisUrl;
   process.env.BETTER_AUTH_SECRET = "test-secret-for-testing-only";
-  process.env.FRONTEND_URL = "http://localhost:3000";
-  process.env.BACKEND_URL = "http://localhost:3001";
-  process.env.FRONTEND_PORT = "3000";
-  process.env.BACKEND_PORT = "3001";
+  process.env.FRONTEND_URL = `http://127.0.0.1:${frontendPort}`;
+  process.env.BACKEND_URL = `http://127.0.0.1:${backendPort}`;
+  process.env.FRONTEND_PORT = frontendPort;
+  process.env.BACKEND_PORT = backendPort;
   process.env.CENTRIFUGO_TOKEN_SECRET = "test-centrifugo-secret";
-  process.env.CENTRIFUGO_URL = "http://localhost:0";
+  process.env.CENTRIFUGO_URL = "http://127.0.0.1:0";
 }

@@ -16,6 +16,8 @@ vi.mock("next/image", () => {
       },
     ) => {
       const { loader: _loader, unoptimized: _unoptimized, ...imgProps } = props;
+      void _loader;
+      void _unoptimized;
       return React.createElement("img", imgProps);
     },
   };

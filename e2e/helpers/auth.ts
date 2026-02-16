@@ -1,6 +1,5 @@
 import type { APIRequestContext } from "@playwright/test";
-
-const BACKEND_URL = "http://localhost:3001";
+import { BACKEND_URL } from "./env";
 
 interface UserCredentials {
   name: string;

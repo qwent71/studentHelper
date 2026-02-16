@@ -1,14 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { testUser } from "./helpers/auth";
-import { resetTestData, closeConnection } from "./helpers/db";
-
-test.beforeEach(async () => {
-  await resetTestData();
-});
-
-test.afterAll(async () => {
-  await closeConnection();
-});
+import { BACKEND_URL } from "./helpers/env";
 
 test.describe("Login flow @smoke", () => {
   test("UI-AUTH-04: login with callbackUrl redirects to that URL", async ({
@@ -18,7 +10,7 @@ test.describe("Login flow @smoke", () => {
     const user = testUser();
 
     // Register via separate API context (doesn't share cookies with browser)
-    await request.post("http://localhost:3001/api/auth/sign-up/email", {
+    await request.post(`${BACKEND_URL}/api/auth/sign-up/email`, {
       data: user,
     });
 
@@ -44,7 +36,7 @@ test.describe("Login flow @smoke", () => {
     const user = testUser();
 
     // Register via separate API context
-    await request.post("http://localhost:3001/api/auth/sign-up/email", {
+    await request.post(`${BACKEND_URL}/api/auth/sign-up/email`, {
       data: user,
     });
 
