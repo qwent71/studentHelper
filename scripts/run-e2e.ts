@@ -1,11 +1,18 @@
-import { createServer } from "node:net";
 import { readdirSync, rmSync } from "node:fs";
+import { createServer } from "node:net";
 import { resolve } from "node:path";
+import {
+  GenericContainer,
+  type StartedTestContainer,
+  Wait,
+} from "testcontainers";
 
 interface ContainerState {
-  pgName: string;
-  redisName: string;
+  postgres: StartedTestContainer;
+  redis: StartedTestContainer;
+  pgHost: string;
   pgPort: number;
+  redisHost: string;
   redisPort: number;
 }
 
@@ -13,10 +20,6 @@ const decoder = new TextDecoder();
 const FRONTEND_ROOT = resolve(import.meta.dir, "../apps/frontend");
 const E2E_NEXT_DIST_DIR = ".next-e2e";
 const LEGACY_E2E_DIST_PREFIX = ".next-e2e-";
-
-function randomSuffix() {
-  return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-}
 
 function parsePort(value: string | undefined): number | undefined {
   if (!value) return undefined;
@@ -59,10 +62,6 @@ function runOrThrow(
     );
   }
   return result;
-}
-
-function runIgnore(cmd: string[]) {
-  runSync(cmd, { stdout: "ignore", stderr: "ignore" });
 }
 
 function cleanupFrontendDistDirs() {
@@ -135,31 +134,136 @@ async function pickPort({
   throw new Error(`Unable to find a free port in range ${start}-${end}`);
 }
 
-function getMappedPort(containerName: string, containerPort: number): number {
-  const result = runOrThrow([
-    "docker",
-    "port",
-    containerName,
-    `${containerPort}/tcp`,
-  ]);
-  const output = decoder.decode(result.stdout).trim();
-  const match = output.match(/:(\d+)\s*$/);
-  if (!match) {
-    throw new Error(`Unexpected docker port output: "${output}"`);
+function ensureDockerAvailable() {
+  const result = runSync(["docker", "info"], {
+    stdout: "ignore",
+    stderr: "ignore",
+  });
+  if (result.exitCode !== 0) {
+    throw new Error("Docker is not available. Start Docker and retry e2e tests.");
   }
-  return Number(match[1]);
 }
 
-async function waitForPort(
-  port: number,
-  timeoutMs: number,
-  intervalMs = 200,
+async function startContainers(): Promise<ContainerState> {
+  const postgres = await new GenericContainer("postgres:17-alpine")
+    .withEnvironment({
+      POSTGRES_USER: "test",
+      POSTGRES_PASSWORD: "test",
+      POSTGRES_DB: "test",
+    })
+    .withExposedPorts(5432)
+    .withWaitStrategy(Wait.forAll([]))
+    .withStartupTimeout(30_000)
+    .start();
+
+  let redis: StartedTestContainer | undefined;
+  try {
+    redis = await new GenericContainer("redis:7-alpine")
+      .withExposedPorts(6379)
+      .withWaitStrategy(Wait.forAll([]))
+      .withStartupTimeout(10_000)
+      .start();
+  } catch (error) {
+    await postgres.stop().catch(() => undefined);
+    throw error;
+  }
+
+  const pgHost = postgres.getHost();
+  const pgPort = postgres.getMappedPort(5432);
+  const redisHost = redis.getHost();
+  const redisPort = redis.getMappedPort(6379);
+
+  try {
+    await waitForServicePort({ host: pgHost, port: pgPort, timeoutMs: 30_000 });
+    await waitForServicePort({
+      host: redisHost,
+      port: redisPort,
+      timeoutMs: 10_000,
+    });
+  } catch (error) {
+    await Promise.all([
+      postgres.stop().catch(() => undefined),
+      redis.stop().catch(() => undefined),
+    ]);
+    throw error;
+  }
+
+  return {
+    postgres,
+    redis,
+    pgHost,
+    pgPort,
+    redisHost,
+    redisPort,
+  };
+}
+
+async function stopContainers(state: ContainerState | undefined): Promise<void> {
+  if (!state) return;
+
+  await Promise.all([
+    state.postgres.stop().catch(() => undefined),
+    state.redis.stop().catch(() => undefined),
+  ]);
+}
+
+function normalizeHost(host: string): string {
+  if (host.includes(":") && !host.startsWith("[") && !host.endsWith("]")) {
+    return `[${host}]`;
+  }
+  return host;
+}
+
+async function runMigrationsWithRetry(
+  env: Record<string, string | undefined>,
 ): Promise<void> {
+  const maxAttempts = 20;
+  const retryDelayMs = 1_000;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    const result = runSync(
+      ["bun", "run", "--cwd", "apps/backend", "migrations:up"],
+      {
+        env,
+        stdout: "inherit",
+        stderr: "inherit",
+      },
+    );
+
+    if (result.exitCode === 0) {
+      return;
+    }
+
+    if (attempt === maxAttempts) {
+      throw new Error(
+        `Migrations failed after ${maxAttempts} attempts (last exit code ${result.exitCode})`,
+      );
+    }
+
+    console.log(
+      `[e2e] Migration attempt ${attempt}/${maxAttempts} failed, retrying in ${retryDelayMs}ms...`,
+    );
+    await Bun.sleep(retryDelayMs);
+  }
+}
+
+async function waitForServicePort({
+  host,
+  port,
+  timeoutMs,
+  intervalMs = 200,
+}: {
+  host: string;
+  port: number;
+  timeoutMs: number;
+  intervalMs?: number;
+}): Promise<void> {
   const deadline = Date.now() + timeoutMs;
+
   while (Date.now() < deadline) {
     try {
       const socket = await Bun.connect({
-        hostname: "127.0.0.1",
+        hostname: host,
         port,
         socket: {
           data() {},
@@ -176,101 +280,16 @@ async function waitForPort(
       await Bun.sleep(intervalMs);
     }
   }
-  throw new Error(`Port ${port} is not ready after ${timeoutMs}ms`);
-}
 
-async function waitForPgReady(containerName: string, timeoutMs: number) {
-  const deadline = Date.now() + timeoutMs;
-  while (Date.now() < deadline) {
-    const result = runSync([
-      "docker",
-      "exec",
-      containerName,
-      "pg_isready",
-      "-U",
-      "test",
-      "-d",
-      "test",
-    ]);
-    if (result.exitCode === 0) return;
-    await Bun.sleep(500);
-  }
-  throw new Error(`Postgres container ${containerName} is not ready`);
-}
-
-function ensureDockerAvailable() {
-  const result = runSync(["docker", "info"], {
-    stdout: "ignore",
-    stderr: "ignore",
-  });
-  if (result.exitCode !== 0) {
-    throw new Error("Docker is not available. Start Docker and retry e2e tests.");
-  }
-}
-
-async function startContainers(runId: string): Promise<ContainerState> {
-  const pgName = `sh-e2e-pg-${runId}`;
-  const redisName = `sh-e2e-redis-${runId}`;
-
-  runIgnore(["docker", "rm", "-f", pgName]);
-  runIgnore(["docker", "rm", "-f", redisName]);
-
-  try {
-    runOrThrow([
-      "docker",
-      "run",
-      "-d",
-      "--name",
-      pgName,
-      "-e",
-      "POSTGRES_USER=test",
-      "-e",
-      "POSTGRES_PASSWORD=test",
-      "-e",
-      "POSTGRES_DB=test",
-      "-p",
-      "0:5432",
-      "postgres:17-alpine",
-    ]);
-
-    runOrThrow([
-      "docker",
-      "run",
-      "-d",
-      "--name",
-      redisName,
-      "-p",
-      "0:6379",
-      "redis:7-alpine",
-    ]);
-
-    const pgPort = getMappedPort(pgName, 5432);
-    const redisPort = getMappedPort(redisName, 6379);
-
-    await waitForPort(pgPort, 30_000);
-    await waitForPgReady(pgName, 30_000);
-    await waitForPort(redisPort, 10_000);
-
-    return { pgName, redisName, pgPort, redisPort };
-  } catch (error) {
-    // Ensure partially started containers do not leak across retries.
-    runIgnore(["docker", "rm", "-f", pgName]);
-    runIgnore(["docker", "rm", "-f", redisName]);
-    throw error;
-  }
-}
-
-function stopContainers(state: ContainerState | undefined) {
-  if (!state) return;
-  runIgnore(["docker", "rm", "-f", state.pgName]);
-  runIgnore(["docker", "rm", "-f", state.redisName]);
+  throw new Error(`Port ${host}:${port} is not ready after ${timeoutMs}ms`);
 }
 
 async function main() {
+  process.env.TESTCONTAINERS_RYUK_DISABLED ??= "true";
+
   ensureDockerAvailable();
   cleanupFrontendDistDirs();
 
-  const runId = randomSuffix();
   const usedPorts = new Set<number>();
   const frontendPort = await pickPort({
     preferred: parsePort(process.env.E2E_FRONTEND_PORT),
@@ -292,7 +311,7 @@ async function main() {
   let exitCode = 1;
   try {
     console.log("[e2e] Starting isolated Postgres and Redis containers...");
-    containers = await startContainers(runId);
+    containers = await startContainers();
 
     const env = {
       ...process.env,
@@ -304,8 +323,8 @@ async function main() {
       NEXT_PUBLIC_FRONTEND_URL: frontendUrl,
       NEXT_PUBLIC_BACKEND_URL: backendUrl,
       NEXT_DIST_DIR: E2E_NEXT_DIST_DIR,
-      DATABASE_URL: `postgresql://test:test@127.0.0.1:${containers.pgPort}/test`,
-      REDIS_URL: `redis://127.0.0.1:${containers.redisPort}`,
+      DATABASE_URL: `postgresql://test:test@${normalizeHost(containers.pgHost)}:${containers.pgPort}/test`,
+      REDIS_URL: `redis://${normalizeHost(containers.redisHost)}:${containers.redisPort}`,
       BETTER_AUTH_SECRET:
         process.env.BETTER_AUTH_SECRET ?? "e2e-test-secret-for-testing-only",
       CENTRIFUGO_TOKEN_SECRET:
@@ -314,11 +333,7 @@ async function main() {
     } as Record<string, string | undefined>;
 
     console.log("[e2e] Running database migrations...");
-    runOrThrow(["bun", "run", "--cwd", "apps/backend", "migrations:up"], {
-      env,
-      stdout: "inherit",
-      stderr: "inherit",
-    });
+    await runMigrationsWithRetry(env);
 
     console.log(
       `[e2e] Running Playwright on ${frontendUrl} (backend ${backendUrl})`,
@@ -333,7 +348,7 @@ async function main() {
     exitCode = await proc.exited;
   } finally {
     console.log("[e2e] Cleaning up isolated containers...");
-    stopContainers(containers);
+    await stopContainers(containers);
     cleanupFrontendDistDirs();
   }
 

@@ -1,194 +1,143 @@
+import {
+  GenericContainer,
+  type StartedTestContainer,
+  Wait,
+} from "testcontainers";
+
 /**
- * Starts Postgres and Redis containers using `docker run` directly.
- *
- * We avoid testcontainers because its port-wait strategy uses Docker log
- * streams that are incompatible with Bun's HTTP handling
- * (see https://github.com/testcontainers/testcontainers-node/issues/974).
+ * Integration tests run under Bun. We disable Ryuk by default because Bun still
+ * has open compatibility issues with the reaper log stream handling.
+ * Containers are always stopped explicitly in stopContainers().
  */
+const POSTGRES_IMAGE = "postgres:17-alpine";
+const REDIS_IMAGE = "redis:7-alpine";
 
-const PG_CONTAINER = "sh-test-pg";
-const REDIS_CONTAINER = "sh-test-redis";
+interface ContainerState {
+  postgres: StartedTestContainer;
+  redis: StartedTestContainer;
+}
 
-let started = false;
-let _postgresUrl = "";
-let _redisUrl = "";
+let state: ContainerState | undefined;
+let postgresUrl = "";
+let redisUrl = "";
 
 export async function startContainers(): Promise<{
   postgresUrl: string;
   redisUrl: string;
 }> {
-  if (started) {
-    return { postgresUrl: _postgresUrl, redisUrl: _redisUrl };
+  if (state) {
+    return { postgresUrl, redisUrl };
   }
 
-  // Remove stale test containers (ignore errors if they don't exist)
-  await Promise.all([
-    run(["docker", "rm", "-f", PG_CONTAINER]),
-    run(["docker", "rm", "-f", REDIS_CONTAINER]),
-  ]);
+  process.env.TESTCONTAINERS_RYUK_DISABLED ??= "true";
 
-  // Start containers in parallel
-  const [pgPort, redisPort] = await Promise.all([
-    startPostgres(),
-    startRedis(),
-  ]);
+  const postgres = await new GenericContainer(POSTGRES_IMAGE)
+    .withEnvironment({
+      POSTGRES_USER: "test",
+      POSTGRES_PASSWORD: "test",
+      POSTGRES_DB: "test",
+    })
+    .withExposedPorts(5432)
+    .withWaitStrategy(Wait.forAll([]))
+    .withStartupTimeout(30_000)
+    .start();
 
-  _postgresUrl = `postgresql://test:test@localhost:${pgPort}/test`;
-  _redisUrl = `redis://localhost:${redisPort}`;
-  started = true;
+  let redis: StartedTestContainer | undefined;
+  try {
+    redis = await new GenericContainer(REDIS_IMAGE)
+      .withExposedPorts(6379)
+      .withWaitStrategy(Wait.forAll([]))
+      .withStartupTimeout(10_000)
+      .start();
+  } catch (error) {
+    await postgres.stop().catch(() => undefined);
+    throw error;
+  }
 
-  return { postgresUrl: _postgresUrl, redisUrl: _redisUrl };
+  const pgHostRaw = postgres.getHost();
+  const pgPort = postgres.getMappedPort(5432);
+  const redisHostRaw = redis.getHost();
+  const redisPort = redis.getMappedPort(6379);
+
+  try {
+    await waitForPort({ host: pgHostRaw, port: pgPort, timeoutMs: 30_000 });
+    await waitForPort({
+      host: redisHostRaw,
+      port: redisPort,
+      timeoutMs: 10_000,
+    });
+  } catch (error) {
+    await Promise.all([
+      postgres.stop().catch(() => undefined),
+      redis.stop().catch(() => undefined),
+    ]);
+    throw error;
+  }
+
+  const pgHost = normalizeHost(pgHostRaw);
+  const redisHost = normalizeHost(redisHostRaw);
+
+  postgresUrl = `postgresql://test:test@${pgHost}:${pgPort}/test`;
+  redisUrl = `redis://${redisHost}:${redisPort}`;
+  state = { postgres, redis };
+
+  return { postgresUrl, redisUrl };
 }
 
 export async function stopContainers(): Promise<void> {
+  if (!state) return;
+
+  const { postgres, redis } = state;
+  state = undefined;
+  postgresUrl = "";
+  redisUrl = "";
+
   await Promise.all([
-    run(["docker", "rm", "-f", PG_CONTAINER]),
-    run(["docker", "rm", "-f", REDIS_CONTAINER]),
+    postgres.stop().catch(() => undefined),
+    redis.stop().catch(() => undefined),
   ]);
-  started = false;
 }
 
-// ── Internal ────────────────────────────────────────────────────────
-
-async function startPostgres(): Promise<number> {
-  await runOrThrow([
-    "docker",
-    "run",
-    "-d",
-    "--name",
-    PG_CONTAINER,
-    "-e",
-    "POSTGRES_USER=test",
-    "-e",
-    "POSTGRES_PASSWORD=test",
-    "-e",
-    "POSTGRES_DB=test",
-    "-p",
-    "0:5432",
-    "postgres:17-alpine",
-  ]);
-
-  const port = await getMappedPort(PG_CONTAINER, 5432);
-
-  // Wait until Postgres actually accepts connections
-  await waitForPort(port, 30_000);
-  await waitForPgReady(port, 30_000);
-
-  return port;
-}
-
-async function startRedis(): Promise<number> {
-  await runOrThrow([
-    "docker",
-    "run",
-    "-d",
-    "--name",
-    REDIS_CONTAINER,
-    "-p",
-    "0:6379",
-    "redis:7-alpine",
-  ]);
-
-  const port = await getMappedPort(REDIS_CONTAINER, 6379);
-
-  await waitForPort(port, 10_000);
-
-  return port;
-}
-
-/** Return the host port that Docker mapped for a given container port. */
-async function getMappedPort(
-  containerName: string,
-  containerPort: number,
-): Promise<number> {
-  const proc = Bun.spawn(
-    ["docker", "port", containerName, `${containerPort}/tcp`],
-    {
-      stdout: "pipe",
-      stderr: "pipe",
-    },
-  );
-  const exitCode = await proc.exited;
-  const stdout = (await new Response(proc.stdout).text()).trim();
-
-  if (exitCode !== 0 || !stdout) {
-    const stderr = (await new Response(proc.stderr).text()).trim();
-    throw new Error(
-      `Failed to resolve mapped port for ${containerName}:${containerPort}\n${stderr}`,
-    );
+function normalizeHost(host: string): string {
+  if (host.includes(":") && !host.startsWith("[") && !host.endsWith("]")) {
+    return `[${host}]`;
   }
-
-  // docker port output examples:
-  // 0.0.0.0:49153
-  // :::49153
-  const match = stdout.match(/:(\d+)\s*$/);
-  if (!match) {
-    throw new Error(`Unexpected docker port output: "${stdout}"`);
-  }
-
-  return Number(match[1]);
+  return host;
 }
 
-/** Wait until a TCP port is accepting connections. */
-async function waitForPort(
-  port: number,
-  timeoutMs: number,
+async function waitForPort({
+  host,
+  port,
+  timeoutMs,
   intervalMs = 200,
-): Promise<void> {
+}: {
+  host: string;
+  port: number;
+  timeoutMs: number;
+  intervalMs?: number;
+}): Promise<void> {
   const deadline = Date.now() + timeoutMs;
+
   while (Date.now() < deadline) {
     try {
-      await Bun.connect({
-        hostname: "localhost",
+      const socket = await Bun.connect({
+        hostname: host,
         port,
         socket: {
           data() {},
-          open(socket) {
-            socket.end();
+          open(sock) {
+            sock.end();
           },
           error() {},
           close() {},
         },
       });
+      socket.end();
       return;
     } catch {
       await Bun.sleep(intervalMs);
     }
   }
-  throw new Error(`Port ${port} not ready after ${timeoutMs}ms`);
-}
 
-/** Wait until Postgres accepts SQL connections (initdb may still be running). */
-async function waitForPgReady(port: number, timeoutMs: number): Promise<void> {
-  const deadline = Date.now() + timeoutMs;
-  while (Date.now() < deadline) {
-    const result = Bun.spawnSync([
-      "docker",
-      "exec",
-      PG_CONTAINER,
-      "pg_isready",
-      "-U",
-      "test",
-      "-d",
-      "test",
-    ]);
-    if (result.exitCode === 0) return;
-    await Bun.sleep(500);
-  }
-  throw new Error(`Postgres not ready after ${timeoutMs}ms`);
-}
-
-async function run(cmd: string[]): Promise<{ exitCode: number }> {
-  const proc = Bun.spawn(cmd, { stdout: "ignore", stderr: "ignore" });
-  const exitCode = await proc.exited;
-  return { exitCode };
-}
-
-async function runOrThrow(cmd: string[]): Promise<void> {
-  const proc = Bun.spawn(cmd, { stdout: "pipe", stderr: "pipe" });
-  const exitCode = await proc.exited;
-  if (exitCode !== 0) {
-    const stderr = await new Response(proc.stderr).text();
-    throw new Error(`Command failed (${exitCode}): ${cmd.join(" ")}\n${stderr}`);
-  }
+  throw new Error(`Port ${host}:${port} not ready after ${timeoutMs}ms`);
 }
