@@ -5,6 +5,7 @@ Large, self-contained UI blocks that compose features and entities. Widgets hand
 ## Current Widgets
 
 - `header/` — App header with logo and theme toggle
+- `app-sidebar/` — Sidebar-08 based protected app layout
 
 ## Conventions
 
