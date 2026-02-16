@@ -1,0 +1,40 @@
+# syntax=docker/dockerfile:1.7
+
+FROM oven/bun:1.2.18 AS base
+WORKDIR /app
+ENV NEXT_TELEMETRY_DISABLED=1
+
+FROM base AS deps
+COPY package.json bun.lock turbo.json ./
+COPY apps/frontend/package.json apps/frontend/package.json
+COPY apps/backend/package.json apps/backend/package.json
+COPY packages/config/package.json packages/config/package.json
+COPY packages/contracts/package.json packages/contracts/package.json
+COPY packages/ui/package.json packages/ui/package.json
+COPY packages/eslint/package.json packages/eslint/package.json
+COPY packages/tsconfig/package.json packages/tsconfig/package.json
+RUN bun install --frozen-lockfile
+
+FROM node:22-slim AS builder
+WORKDIR /app
+COPY --from=base /usr/local/bin/bun /usr/local/bin/bun
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+RUN bun run --filter frontend build
+
+FROM node:22-slim AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+ENV FRONTEND_PORT=3000
+ENV PORT=3000
+ENV HOSTNAME=0.0.0.0
+ENV NEXT_TELEMETRY_DISABLED=1
+
+COPY --from=builder --chown=node:node /app/apps/frontend/.next/standalone ./
+COPY --from=builder --chown=node:node /app/apps/frontend/.next/static ./apps/frontend/.next/static
+COPY --from=builder --chown=node:node /app/apps/frontend/public ./apps/frontend/public
+
+USER node
+EXPOSE 3000
+
+CMD ["node", "apps/frontend/server.js"]

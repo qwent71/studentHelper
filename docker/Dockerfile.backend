@@ -1,0 +1,32 @@
+# syntax=docker/dockerfile:1.7
+
+FROM oven/bun:1.2.18 AS base
+WORKDIR /app
+
+FROM base AS deps
+COPY package.json bun.lock turbo.json ./
+COPY apps/frontend/package.json apps/frontend/package.json
+COPY apps/backend/package.json apps/backend/package.json
+COPY packages/config/package.json packages/config/package.json
+COPY packages/contracts/package.json packages/contracts/package.json
+COPY packages/ui/package.json packages/ui/package.json
+COPY packages/eslint/package.json packages/eslint/package.json
+COPY packages/tsconfig/package.json packages/tsconfig/package.json
+RUN bun install --frozen-lockfile
+
+FROM base AS builder
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+RUN bun run --filter @student-helper/backend build
+
+FROM oven/bun:1.2.18 AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+ENV BACKEND_PORT=3001
+
+COPY --from=builder --chown=bun:bun /app/apps/backend/dist ./dist
+
+USER bun
+EXPOSE 3001
+
+CMD ["bun", "dist/index.js"]
