@@ -1,8 +1,5 @@
 import postgres from "postgres";
-
-const DATABASE_URL =
-  process.env.DATABASE_URL ??
-  "postgresql://studenthelper:studenthelper@localhost:5432/studenthelper";
+import { getDatabaseUrl } from "./env";
 
 const TABLES = [
   "message",
@@ -20,7 +17,7 @@ let sql: ReturnType<typeof postgres> | undefined;
 
 function getConnection() {
   if (!sql) {
-    sql = postgres(DATABASE_URL);
+    sql = postgres(getDatabaseUrl());
   }
   return sql;
 }

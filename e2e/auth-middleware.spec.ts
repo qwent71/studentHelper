@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { registerUser, testUser } from "./helpers/auth";
+import { BACKEND_URL, FRONTEND_URL } from "./helpers/env";
 import { resetTestData, closeConnection } from "./helpers/db";
 
 test.beforeEach(async () => {
@@ -35,7 +36,7 @@ test.describe("Middleware redirects @smoke", () => {
     // Set cookies in browser context
     const cookiePairs = cookies.split("; ").map((c) => {
       const [name, value] = c.split("=");
-      return { name, value, url: "http://localhost:3000" };
+      return { name, value, url: FRONTEND_URL };
     });
     await page.context().addCookies(cookiePairs);
 
@@ -50,7 +51,7 @@ test.describe("Middleware redirects @smoke", () => {
     const user = testUser();
 
     // Register via separate API context (doesn't share cookies with browser)
-    await request.post("http://localhost:3001/api/auth/sign-up/email", {
+    await request.post(`${BACKEND_URL}/api/auth/sign-up/email`, {
       data: user,
     });
 

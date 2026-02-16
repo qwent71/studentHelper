@@ -26,6 +26,8 @@ blob-report/
 
 # Build Outputs
 .next/
+apps/frontend/.next-e2e/
+apps/frontend/.next-e2e-*/
 out/
 build
 dist

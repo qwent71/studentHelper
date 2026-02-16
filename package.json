@@ -11,10 +11,10 @@
     "backend:dev": "turbo run dev --filter=@student-helper/backend",
     "workers:dev": "turbo run workers:dev --filter=@student-helper/backend",
     "tests": "bun run --filter=@student-helper/backend tests",
-    "e2e": "bunx playwright test",
-    "e2e:smoke": "bunx playwright test --grep @smoke",
-    "e2e:regression": "bunx playwright test --grep @regression",
-    "e2e:ui": "bunx playwright test --ui",
+    "e2e": "bun run ./scripts/run-e2e.ts",
+    "e2e:smoke": "bun run ./scripts/run-e2e.ts --grep @smoke",
+    "e2e:regression": "bun run ./scripts/run-e2e.ts --grep @regression",
+    "e2e:ui": "bun run ./scripts/run-e2e.ts --ui",
     "e2e:report": "bunx playwright show-report"
   },
   "devDependencies": {

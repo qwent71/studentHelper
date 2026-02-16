@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { testUser } from "./helpers/auth";
+import { BACKEND_URL } from "./helpers/env";
 import { resetTestData, closeConnection } from "./helpers/db";
 
 test.beforeEach(async () => {
@@ -28,7 +29,7 @@ test.describe("Signup flow @smoke", () => {
     const user = testUser();
 
     // Register first user via separate API context (doesn't share cookies with browser)
-    await request.post("http://localhost:3001/api/auth/sign-up/email", {
+    await request.post(`${BACKEND_URL}/api/auth/sign-up/email`, {
       data: user,
     });
 

@@ -138,7 +138,7 @@ async function waitForPort(
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
     try {
-      const socket = await Bun.connect({
+      await Bun.connect({
         hostname: "localhost",
         port,
         socket: {
