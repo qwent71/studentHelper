@@ -114,6 +114,18 @@ Uses **Vitest** with jsdom environment.
 - Auth routes: `/auth/*` — redirects to `/app` if already authenticated
 - Session validation via fetch to backend `GET /api/auth/get-session`
 
+## Visual Check via Playwright (REQUIRED)
+
+**After every frontend change**, once typecheck/lint/test pass, ALWAYS verify the affected page visually using MCP Playwright:
+
+1. `browser_navigate` to the relevant page (e.g. `http://localhost:3000/app`)
+2. `browser_snapshot` to inspect the accessibility tree and verify layout
+3. `browser_take_screenshot` if needed — **never save screenshots to the repo**, use `/tmp/` or omit filename (defaults to gitignored `.playwright-mcp/`)
+4. If the change affects mobile, `browser_resize` to 375×812 and re-check
+5. Delete any screenshot files you created
+
+This catches layout regressions and rendering issues that typecheck/lint cannot detect. **Do not skip this step.**
+
 ## Configuration
 
 - **TypeScript**: `@/*` → `./src/*`. Extends `@student-helper/tsconfig/nextjs.json`.

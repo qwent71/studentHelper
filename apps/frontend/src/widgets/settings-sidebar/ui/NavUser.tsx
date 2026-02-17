@@ -10,6 +10,16 @@ import {
   HelpCircle,
 } from "lucide-react";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@student-helper/ui/web/primitives/alert-dialog";
+import {
   Avatar,
   AvatarFallback,
   AvatarImage,
@@ -45,6 +55,7 @@ export function NavUser({ user }: NavUserProps) {
   const { isMobile } = useSidebar();
   const { setOpen, openToCategory } = useSettingsDialog();
   const [isSigningOut, setIsSigningOut] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const initials = user.name
     .split(" ")
@@ -149,17 +160,39 @@ export function NavUser({ user }: NavUserProps) {
             <DropdownMenuSeparator />
             <DropdownMenuItem
               className={menuItemClass}
-              onSelect={(event) => {
-                event.preventDefault();
-                void handleSignOut();
-              }}
-              disabled={isSigningOut}
+              onSelect={() => setShowLogoutConfirm(true)}
             >
               <LogOut className={menuIconClass} />
-              {isSigningOut ? "Logging out..." : "Log out"}
+              Log out
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+
+        <AlertDialog open={showLogoutConfirm} onOpenChange={setShowLogoutConfirm}>
+          <AlertDialogContent size="sm">
+            <AlertDialogHeader>
+              <AlertDialogTitle>Log out?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to log out of your account?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={isSigningOut}>
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                variant="destructive"
+                disabled={isSigningOut}
+                onClick={(e) => {
+                  e.preventDefault();
+                  void handleSignOut();
+                }}
+              >
+                {isSigningOut ? "Logging out..." : "Log out"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </SidebarMenuItem>
     </SidebarMenu>
   );

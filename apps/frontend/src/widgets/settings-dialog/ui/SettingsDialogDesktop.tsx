@@ -1,11 +1,14 @@
 "use client";
 
+import { X } from "lucide-react";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogTitle,
 } from "@student-helper/ui/web/primitives/dialog";
+import { Button } from "@student-helper/ui/web/primitives/button";
 import {
   Sidebar,
   SidebarContent,
@@ -39,6 +42,14 @@ export function SettingsDialogDesktop() {
         </DialogDescription>
         <SidebarProvider className="items-start">
           <Sidebar collapsible="none" className="hidden md:flex">
+            <div className="flex h-12 shrink-0 items-center border-b px-2">
+              <DialogClose asChild>
+                <Button variant="ghost" size="icon-xs">
+                  <X className="size-4" />
+                  <span className="sr-only">Close</span>
+                </Button>
+              </DialogClose>
+            </div>
             <SidebarContent>
               <SidebarGroup>
                 <SidebarGroupContent>

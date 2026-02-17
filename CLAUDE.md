@@ -109,6 +109,7 @@ If any check fails, fix the issues before finishing. Do NOT leave broken code.
 
 ## Key Patterns
 
+- **UI components — always check shadcn/ui first**: Before building any UI component from scratch, ALWAYS search the shadcn/ui registry (via MCP `search_items_in_registries` or [ui.shadcn.com](https://ui.shadcn.com)) for an existing component. If one exists, install it with `cd packages/ui && bunx shadcn@latest add <component>` and use it. This applies to dialogs, dropdowns, tooltips, alerts, forms, and any other common UI pattern.
 - **Imports from `@student-helper/ui`** use subpath exports: `@student-helper/ui/web/primitives/button`, `@student-helper/ui/utils/cn`, `@student-helper/ui/tokens`, `@student-helper/ui/web/hooks/use-media-query`
 - **Styling**: Tailwind CSS 4 with CSS-first config. Theme is defined via CSS variables (HSL) in `packages/ui/src/web/styles/globals.css`. The web app's `globals.css` imports `@student-helper/ui/globals.css`.
 - **Dark mode**: `.dark` class on root element, all theme colors have dark variants via CSS variables.
