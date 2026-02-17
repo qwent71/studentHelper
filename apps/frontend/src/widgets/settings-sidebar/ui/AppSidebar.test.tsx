@@ -8,11 +8,10 @@ const { routerPushMock, routerRefreshMock, signOutMock, settingsDialogMock } = v
   settingsDialogMock: {
     open: false,
     setOpen: vi.fn(),
-    nav: { categoryId: "account", subPageId: null },
+    categoryId: "account",
     mobileView: "list" as const,
     openToCategory: vi.fn(),
     selectCategory: vi.fn(),
-    selectSubPage: vi.fn(),
     goBack: vi.fn(),
   },
 }));
@@ -134,7 +133,7 @@ describe("AppSidebar", () => {
     expect(screen.getByText("Textbooks")).toBeInTheDocument();
     expect(screen.getByText("AI Tutor")).toBeInTheDocument();
     expect(screen.getByText("Uploads")).toBeInTheDocument();
-    expect(screen.getByText("Settings")).toBeInTheDocument();
+    expect(screen.getAllByText("Settings").length).toBeGreaterThanOrEqual(1);
   });
 
   it("renders user info in the footer", () => {

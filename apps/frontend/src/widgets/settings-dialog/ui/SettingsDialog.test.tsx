@@ -5,11 +5,10 @@ const { settingsDialogMock } = vi.hoisted(() => ({
   settingsDialogMock: {
     open: true,
     setOpen: vi.fn(),
-    nav: { categoryId: "account", subPageId: null },
+    categoryId: "account",
     mobileView: "list" as const,
     openToCategory: vi.fn(),
     selectCategory: vi.fn(),
-    selectSubPage: vi.fn(),
     goBack: vi.fn(),
   },
 }));
@@ -100,7 +99,7 @@ describe("SettingsDialog", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     settingsDialogMock.open = true;
-    settingsDialogMock.nav = { categoryId: "account", subPageId: null };
+    settingsDialogMock.categoryId = "account";
     settingsDialogMock.mobileView = "list";
   });
 
@@ -114,11 +113,12 @@ describe("SettingsDialog", () => {
     expect(screen.getByText("Privacy")).toBeInTheDocument();
   });
 
-  it("shows sub-page list when category has sub-pages", () => {
+  it("shows panel content directly for selected category", () => {
     render(<SettingsDialog />);
 
-    expect(screen.getByText("Profile")).toBeInTheDocument();
-    expect(screen.getByText("Password")).toBeInTheDocument();
+    expect(
+      screen.getByText("Manage your account settings and profile information."),
+    ).toBeInTheDocument();
   });
 
   it("clicking a category calls selectCategory", () => {

@@ -35,26 +35,17 @@ function CategoryList() {
 }
 
 export function SettingsDialogMobile() {
-  const { open, setOpen, nav, mobileView, goBack } = useSettingsDialog();
+  const { open, setOpen, categoryId, mobileView, goBack } = useSettingsDialog();
 
   const activeCategory = settingsCategories.find(
-    (c) => c.id === nav.categoryId,
+    (c) => c.id === categoryId,
   );
-  const activeSubPage = activeCategory?.subPages?.find(
-    (s) => s.id === nav.subPageId,
-  );
-
-  function getTitle() {
-    if (mobileView === "subpage" && activeSubPage) return activeSubPage.label;
-    if (mobileView === "category" && activeCategory) return activeCategory.label;
-    return "Settings";
-  }
 
   return (
     <Drawer open={open} onOpenChange={setOpen}>
       <DrawerContent>
         <DrawerHeader className="flex flex-row items-center gap-2">
-          {mobileView !== "list" && (
+          {mobileView === "content" && (
             <Button
               variant="ghost"
               size="icon-xs"
@@ -65,7 +56,11 @@ export function SettingsDialogMobile() {
               <span className="sr-only">Back</span>
             </Button>
           )}
-          <DrawerTitle>{getTitle()}</DrawerTitle>
+          <DrawerTitle>
+            {mobileView === "content" && activeCategory
+              ? activeCategory.label
+              : "Settings"}
+          </DrawerTitle>
           <DrawerDescription className="sr-only">
             Application settings and preferences
           </DrawerDescription>

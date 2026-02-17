@@ -10,21 +10,15 @@ import {
   useState,
 } from "react";
 
-interface SettingsNav {
-  categoryId: string | null;
-  subPageId: string | null;
-}
-
-type MobileView = "list" | "category" | "subpage";
+type MobileView = "list" | "content";
 
 interface SettingsDialogContextValue {
   open: boolean;
   setOpen: (open: boolean) => void;
-  nav: SettingsNav;
+  categoryId: string;
   mobileView: MobileView;
   openToCategory: (categoryId: string) => void;
   selectCategory: (categoryId: string) => void;
-  selectSubPage: (subPageId: string) => void;
   goBack: () => void;
 }
 
@@ -32,30 +26,23 @@ const SettingsDialogContext = createContext<SettingsDialogContextValue | null>(
   null,
 );
 
-const initialNav: SettingsNav = { categoryId: "account", subPageId: null };
+const defaultCategoryId = "account";
 
-function buildHash(nav: SettingsNav): string {
-  if (!nav.categoryId) return "#settings";
-  if (nav.subPageId) return `#settings/${nav.categoryId}/${nav.subPageId}`;
-  return `#settings/${nav.categoryId}`;
+function buildHash(categoryId: string): string {
+  return `#settings/${categoryId}`;
 }
 
-function parseHash(hash: string): { nav: SettingsNav; mobileView: MobileView } | null {
+function parseHash(hash: string): { categoryId: string; mobileView: MobileView } | null {
   if (!hash.startsWith("#settings")) return null;
 
-  const parts = hash.slice(1).split("/"); // ["settings", category?, subPage?]
+  const parts = hash.slice(1).split("/"); // ["settings", category?]
   const categoryId = parts[1] || null;
-  const subPageId = parts[2] || null;
 
   if (!categoryId) {
-    return { nav: initialNav, mobileView: "list" };
+    return { categoryId: defaultCategoryId, mobileView: "list" };
   }
 
-  if (subPageId) {
-    return { nav: { categoryId, subPageId }, mobileView: "subpage" };
-  }
-
-  return { nav: { categoryId, subPageId: null }, mobileView: "category" };
+  return { categoryId, mobileView: "content" };
 }
 
 export function SettingsDialogProvider({
@@ -64,7 +51,7 @@ export function SettingsDialogProvider({
   children: React.ReactNode;
 }) {
   const [open, setOpenState] = useState(false);
-  const [nav, setNav] = useState<SettingsNav>(initialNav);
+  const [categoryId, setCategoryId] = useState(defaultCategoryId);
   const [mobileView, setMobileView] = useState<MobileView>("list");
   const skipHashUpdate = useRef(false);
 
@@ -74,14 +61,14 @@ export function SettingsDialogProvider({
       const parsed = parseHash(window.location.hash);
       if (parsed) {
         skipHashUpdate.current = true;
-        setNav(parsed.nav);
+        setCategoryId(parsed.categoryId);
         setMobileView(parsed.mobileView);
         setOpenState(true);
         return;
       }
 
       setOpenState(false);
-      setNav(initialNav);
+      setCategoryId(defaultCategoryId);
       setMobileView("list");
     }
 
@@ -98,70 +85,55 @@ export function SettingsDialogProvider({
     }
 
     if (open) {
-      const newHash = buildHash(nav);
+      const newHash = buildHash(categoryId);
       if (window.location.hash !== newHash) {
         window.history.replaceState(null, "", newHash);
       }
     } else if (window.location.hash.startsWith("#settings")) {
       window.history.replaceState(null, "", window.location.pathname + window.location.search);
     }
-  }, [open, nav]);
+  }, [open, categoryId]);
 
   const setOpen = useCallback((value: boolean) => {
     setOpenState(value);
     if (!value) {
-      setNav(initialNav);
+      setCategoryId(defaultCategoryId);
       setMobileView("list");
     }
   }, []);
 
-  const openToCategory = useCallback((categoryId: string) => {
-    setNav({ categoryId, subPageId: null });
-    setMobileView("category");
+  const openToCategory = useCallback((id: string) => {
+    setCategoryId(id);
+    setMobileView("content");
     setOpenState(true);
   }, []);
 
-  const selectCategory = useCallback((categoryId: string) => {
-    setNav({ categoryId, subPageId: null });
-    setMobileView("category");
+  const selectCategory = useCallback((id: string) => {
+    setCategoryId(id);
+    setMobileView("content");
   }, []);
 
-  const selectSubPage = useCallback(
-    (subPageId: string) => {
-      setNav({ categoryId: nav.categoryId, subPageId });
-      setMobileView("subpage");
-    },
-    [nav.categoryId],
-  );
-
   const goBack = useCallback(() => {
-    if (mobileView === "subpage") {
-      setNav((prev) => ({ ...prev, subPageId: null }));
-      setMobileView("category");
-    } else if (mobileView === "category") {
-      setMobileView("list");
-    }
-  }, [mobileView]);
+    setMobileView("list");
+  }, []);
 
   const value = useMemo(
     () => ({
       open,
       setOpen,
-      nav,
+      categoryId,
       mobileView,
       openToCategory,
       selectCategory,
-      selectSubPage,
       goBack,
     }),
     [
       open,
       setOpen,
-      nav,
+      categoryId,
       mobileView,
       openToCategory,
       selectCategory,
-      selectSubPage,
       goBack,
     ],
   );

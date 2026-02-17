@@ -21,10 +21,10 @@ import { settingsCategories } from "../model/settings-navigation";
 import { SettingsContent } from "./SettingsContent";
 
 export function SettingsDialogDesktop() {
-  const { open, setOpen, nav, selectCategory } = useSettingsDialog();
+  const { open, setOpen, categoryId, selectCategory } = useSettingsDialog();
 
   const activeCategory = settingsCategories.find(
-    (c) => c.id === nav.categoryId,
+    (c) => c.id === categoryId,
   );
 
   return (
@@ -46,7 +46,7 @@ export function SettingsDialogDesktop() {
                     {settingsCategories.map((category) => (
                       <SidebarMenuItem key={category.id}>
                         <SidebarMenuButton
-                          isActive={nav.categoryId === category.id}
+                          isActive={categoryId === category.id}
                           onClick={() => selectCategory(category.id)}
                         >
                           <category.icon />

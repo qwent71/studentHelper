@@ -77,10 +77,13 @@ Do NOT run `bun run typecheck` / `bun run lint` (full monorepo) or `bun run test
 
 **After** typecheck/lint/test pass, ALWAYS do a visual check of the affected page using MCP Playwright:
 
-1. `browser_navigate` to the relevant page (e.g. `http://localhost:8000/app`)
+1. `browser_navigate` to the relevant page (e.g. `http://localhost:3000/app`)
 2. `browser_snapshot` to inspect the accessibility tree and verify layout
-3. `browser_take_screenshot` if needed for visual verification
+3. `browser_take_screenshot` if needed for visual verification — **do NOT save screenshots to the repo directory**; use a temp path (e.g. `/tmp/screenshot.png`) or omit the `filename` param so they go to the default `.playwright-mcp/` dir (which is gitignored)
 4. If the change affects mobile, `browser_resize` to a mobile viewport (e.g. 375×812) and re-check
+5. After finishing, **delete any screenshot files** you created, or rely on `.playwright-mcp/` which is gitignored
+
+**Port**: The frontend dev server runs on port **3000** (`FRONTEND_PORT=3000` in `.env`). Always use `http://localhost:3000` for Playwright MCP checks.
 
 This catches layout regressions, broken styling, and rendering issues that typecheck/lint cannot detect.
 

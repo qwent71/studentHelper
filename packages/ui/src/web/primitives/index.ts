@@ -115,3 +115,15 @@ export {
   DrawerTitle,
   DrawerDescription,
 } from "./drawer.js";
+export {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectScrollDownButton,
+  SelectScrollUpButton,
+  SelectSeparator,
+  SelectTrigger,
+  SelectValue,
+} from "./select.js";
