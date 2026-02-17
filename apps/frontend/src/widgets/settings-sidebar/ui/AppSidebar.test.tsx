@@ -1,10 +1,20 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { routerPushMock, routerRefreshMock, signOutMock } = vi.hoisted(() => ({
+const { routerPushMock, routerRefreshMock, signOutMock, settingsDialogMock } = vi.hoisted(() => ({
   routerPushMock: vi.fn(),
   routerRefreshMock: vi.fn(),
   signOutMock: vi.fn(),
+  settingsDialogMock: {
+    open: false,
+    setOpen: vi.fn(),
+    nav: { categoryId: "account", subPageId: null },
+    mobileView: "list" as const,
+    openToCategory: vi.fn(),
+    selectCategory: vi.fn(),
+    selectSubPage: vi.fn(),
+    goBack: vi.fn(),
+  },
 }));
 
 // Mock next/navigation
@@ -79,6 +89,10 @@ vi.mock("@student-helper/ui/web/primitives/dropdown-menu", () => ({
 
 vi.mock("@/shared/auth/auth-client", () => ({
   signOut: signOutMock,
+}));
+
+vi.mock("@/shared/settings", () => ({
+  useSettingsDialog: () => settingsDialogMock,
 }));
 
 import { AppSidebar } from "./AppSidebar";

@@ -14,6 +14,8 @@ import {
   BreadcrumbPage,
 } from "@student-helper/ui/web/primitives/breadcrumb";
 import { AppSidebar } from "@/widgets/settings-sidebar";
+import { SettingsDialog } from "@/widgets/settings-dialog";
+import { SettingsDialogProvider } from "@/shared/settings";
 import type { User } from "@/entities/user";
 
 interface SessionResponse {
@@ -59,24 +61,27 @@ export default async function AppLayout({
   }
 
   return (
-    <SidebarProvider defaultOpen={defaultSidebarOpen}>
-      <AppSidebar user={user} />
-      <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
-          <div className="flex items-center gap-2">
-            <SidebarTrigger className="-ml-1" />
-            <Separator orientation="vertical" className="mr-2 h-4" />
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem>
-                  <BreadcrumbPage>Dashboard</BreadcrumbPage>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
-          </div>
-        </header>
-        <main className="flex-1 p-4">{children}</main>
-      </SidebarInset>
-    </SidebarProvider>
+    <SettingsDialogProvider>
+      <SidebarProvider defaultOpen={defaultSidebarOpen}>
+        <AppSidebar user={user} />
+        <SidebarInset>
+          <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+            <div className="flex items-center gap-2">
+              <SidebarTrigger className="-ml-1" />
+              <Separator orientation="vertical" className="mr-2 h-4" />
+              <Breadcrumb>
+                <BreadcrumbList>
+                  <BreadcrumbItem>
+                    <BreadcrumbPage>Dashboard</BreadcrumbPage>
+                  </BreadcrumbItem>
+                </BreadcrumbList>
+              </Breadcrumb>
+            </div>
+          </header>
+          <main className="flex-1 p-4">{children}</main>
+        </SidebarInset>
+      </SidebarProvider>
+      <SettingsDialog />
+    </SettingsDialogProvider>
   );
 }

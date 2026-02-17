@@ -12,6 +12,7 @@ export interface NavItem {
   title: string;
   url: string;
   icon: LucideIcon;
+  action?: "open-settings";
 }
 
 export const mainNavItems: NavItem[] = [
@@ -20,5 +21,5 @@ export const mainNavItems: NavItem[] = [
   { title: "Textbooks", url: "/app/textbooks", icon: BookOpen },
   { title: "AI Tutor", url: "/app/tutor", icon: BrainCircuit },
   { title: "Uploads", url: "/app/uploads", icon: Upload },
-  { title: "Settings", url: "/app/settings", icon: Settings },
+  { title: "Settings", url: "/app/settings", icon: Settings, action: "open-settings" },
 ];

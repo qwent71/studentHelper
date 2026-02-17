@@ -66,13 +66,23 @@ The UI package uses shadcn/ui (new-york style) with Radix primitives. The `compo
 | What changed | What to run |
 |---|---|
 | Backend code (`apps/backend/`) | `bun run --filter @student-helper/backend typecheck`, `bun run --filter @student-helper/backend lint`, `bun run tests` |
-| Frontend code (`apps/frontend/`) | `bun run --filter frontend typecheck`, `bun run --filter frontend lint`, `bun run --filter frontend test` |
-| Frontend UI (visual) | Visual check via MCP Playwright (`browser_navigate` + `browser_snapshot`/`browser_take_screenshot`) |
+| Frontend code (`apps/frontend/`) | `bun run --filter frontend typecheck`, `bun run --filter frontend lint`, `bun run --filter frontend test`, then **visual check via MCP Playwright** (see below) |
 | UI package (`packages/ui/`) | `bun run --filter @student-helper/ui typecheck`, `bun run --filter @student-helper/ui lint` |
 | Auth or critical flows | `bun run e2e` |
 | Frontend before deploy/PR | `bun run --filter frontend build` |
 
 Do NOT run `bun run typecheck` / `bun run lint` (full monorepo) or `bun run tests` (backend) when only frontend/UI code changed, and vice versa. Do NOT run build or E2E unless specifically needed.
+
+### Visual check via Playwright (required for frontend changes)
+
+**After** typecheck/lint/test pass, ALWAYS do a visual check of the affected page using MCP Playwright:
+
+1. `browser_navigate` to the relevant page (e.g. `http://localhost:8000/app`)
+2. `browser_snapshot` to inspect the accessibility tree and verify layout
+3. `browser_take_screenshot` if needed for visual verification
+4. If the change affects mobile, `browser_resize` to a mobile viewport (e.g. 375×812) and re-check
+
+This catches layout regressions, broken styling, and rendering issues that typecheck/lint cannot detect.
 
 If any check fails, fix the issues before finishing. Do NOT leave broken code.
 
