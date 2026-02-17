@@ -91,6 +91,7 @@ import { cn } from "@student-helper/ui/utils/cn";
 - Theme colors via CSS variables (HSL) in `@student-helper/ui/globals.css`
 - `dark:` variant or semantic tokens (`text-foreground`, `bg-background`)
 - Component variants via CVA, class merging via `cn()`
+- **Follow [`STYLE_GUIDE.md`](./STYLE_GUIDE.md)** — semantic tokens, surface hierarchy, CTA rules, interactive states, and Tailwind class conventions. Never use raw palette colors (`gray-*`, `slate-*`) for UI surfaces/text/borders; always use semantic tokens (`bg-background`, `text-foreground`, `border-border`, etc.).
 
 ### Adding a New Slice
 

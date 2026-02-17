@@ -171,6 +171,8 @@ Higher-level components in `src/web/components/` compose primitives and are expo
 
 `--background`, `--foreground`, `--primary`, `--secondary`, `--muted`, `--accent`, `--destructive`, `--border`, `--input`, `--ring`, `--card`, `--popover`, `--radius`, `--chart-1..5`
 
+> **When modifying or adding theme tokens**, follow the semantic design rules in [`apps/frontend/STYLE_GUIDE.md`](../../apps/frontend/STYLE_GUIDE.md) — surface hierarchy, role assignments, light/dark parity, and token extension patterns.
+
 ## Dependencies
 
 - `radix-ui` — headless primitives
