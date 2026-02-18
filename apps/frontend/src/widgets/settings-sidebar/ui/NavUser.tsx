@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
+  ChevronRight,
   ChevronsUpDown,
   LogOut,
   Paintbrush,
@@ -77,6 +78,33 @@ export function NavUser({ user }: NavUserProps) {
     router.refresh();
   }
 
+  if (isMobile) {
+    return (
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <SidebarMenuButton
+            size="lg"
+            onClick={() => setOpen(true)}
+          >
+            <Avatar className="size-8 rounded-lg">
+              {user.image && <AvatarImage src={user.image} alt={user.name} />}
+              <AvatarFallback className="rounded-lg">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+            <div className="grid flex-1 text-left text-sm leading-tight">
+              <span className="truncate font-medium">{user.name}</span>
+              <span className="text-muted-foreground truncate text-xs">
+                {user.email}
+              </span>
+            </div>
+            <ChevronRight className="text-muted-foreground ml-auto size-5" />
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      </SidebarMenu>
+    );
+  }
+
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -103,7 +131,7 @@ export function NavUser({ user }: NavUserProps) {
           </DropdownMenuTrigger>
           <DropdownMenuContent
             className="w-[calc(var(--radix-dropdown-menu-trigger-width)+8px)] min-w-56 rounded-xl p-1.5"
-            side={isMobile ? "bottom" : "top"}
+            side="top"
             align="start"
             alignOffset={-4}
             sideOffset={8}
