@@ -51,7 +51,7 @@ export function SettingsDialogMobile() {
     <Drawer open={open} onOpenChange={setOpen}>
       <DrawerContent>
         <DrawerHeader className="flex flex-row items-center gap-2">
-          {mobileView === "content" && (
+          {mobileView === "content" ? (
             <Button
               variant="ghost"
               size="icon-sm"
@@ -61,8 +61,10 @@ export function SettingsDialogMobile() {
               <ArrowLeft className="size-5" />
               <span className="sr-only">Back</span>
             </Button>
+          ) : (
+            <div className="size-8 shrink-0" />
           )}
-          <DrawerTitle className="flex-1 text-lg">
+          <DrawerTitle className="flex-1 text-center text-lg">
             {mobileView === "content" && activeCategory
               ? activeCategory.label
               : "Settings"}
