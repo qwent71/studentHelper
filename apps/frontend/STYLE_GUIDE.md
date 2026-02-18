@@ -196,3 +196,96 @@ If the product needs additional semantic roles, add them as CSS variables follow
 - `--info` / `--info-foreground`
 
 Define both light and dark values. Use the same lightness-role rules as core tokens.
+
+## 9. Mobile Responsiveness
+
+All UI must be comfortable to use on touch screens. Use responsive breakpoints (`md:` for desktop overrides) to ensure mobile-first sizing. The principle: **design for fingers first, then refine for mouse**.
+
+### Touch target sizes
+
+Based on Apple HIG (44pt), Material Design (48dp), and WCAG 2.5.5 (44px):
+
+| Element | Minimum height | Recommended | Tailwind |
+|---|---|---|---|
+| Primary button | 44px | 48px | `h-11` / `h-12` |
+| Secondary button | 40px | 44px | `h-10` / `h-11` |
+| Icon button | 44×44px | 48×48px | `size-11` / `size-12` |
+| List/nav item | 44px | 48px | `min-h-11` / `min-h-12` |
+| Form input, select | 44px | 48px | `h-11` / `h-12` |
+| Checkbox/radio row | 44px | 48px | `min-h-11 py-3` |
+| Tab bar item | 44px | 48px | `min-h-11` / `min-h-12` |
+
+### Font sizes
+
+| Element | Mobile | Desktop | Tailwind pattern |
+|---|---|---|---|
+| Body / primary text | 16px | 14px | `text-base md:text-sm` |
+| Secondary text | 14px | 12px | `text-sm md:text-xs` |
+| Form input text | 16px (mandatory) | 14px | `text-base md:text-sm` |
+| Button text | 16px | 14px | `text-base md:text-sm` |
+| Page heading (H1) | 24px | 24–28px | `text-2xl` |
+| Section heading (H2) | 20px | 18–20px | `text-xl md:text-lg` |
+| Panel/card heading | 18px | 16px | `text-lg md:text-base` |
+
+> **iOS zoom prevention**: `<input>`, `<select>`, and `<textarea>` elements **must** use `text-base` (16px) or larger on mobile. Font size below 16px triggers automatic zoom on iOS Safari.
+
+### Spacing and padding
+
+| Context | Mobile | Desktop | Tailwind pattern |
+|---|---|---|---|
+| Button padding | `py-3 px-5` | `py-2 px-4` | `py-3 px-5 md:py-2 md:px-4` |
+| List item padding | `py-3.5 px-4` | `py-2.5 px-3` | `py-3.5 px-4 md:py-2.5 md:px-3` |
+| Card / section padding | `p-5` | `p-4` | `p-5 md:p-4` |
+| Form field spacing | `space-y-5` | `space-y-4` | `space-y-5 md:space-y-4` |
+| Section spacing | `space-y-6` | `space-y-4` | `space-y-6 md:space-y-4` |
+| Page horizontal margin | `px-4` | `px-4`–`px-6` | `px-4` |
+
+### Gaps between interactive elements
+
+Insufficient spacing between adjacent tappable elements causes accidental taps.
+
+| Context | Minimum gap | Recommended | Tailwind |
+|---|---|---|---|
+| Adjacent buttons | 8px | 12px | `gap-3` |
+| Inline icon buttons | 8px | 12px | `gap-3` |
+| Stacked list items | 4px | 6px | `space-y-1.5` |
+| Form checkboxes/radios | 12px | 16px | `space-y-3` / `space-y-4` |
+| Nav/tab items | 4px | 8px | `gap-2` |
+
+**WCAG spacing rule**: if a target is smaller than 44px, no adjacent target's 44px bounding circle may overlap. Practical formula: `required_gap = max(0, 44px − target_height)`.
+
+### Icons
+
+| Context | Mobile | Desktop | Tailwind pattern |
+|---|---|---|---|
+| In buttons / nav items | 20px | 16px | `size-5 md:size-4` |
+| Standalone icon button | 24px | 20px | `size-6 md:size-5` |
+| Decorative / inline | 16px | 16px | `size-4` |
+
+### Responsive pattern
+
+Use **mobile-first** values with `md:` overrides for desktop:
+
+```tsx
+// Correct — mobile-first
+<button className="h-12 px-5 text-base md:h-9 md:px-4 md:text-sm">Save</button>
+<input className="h-12 text-base md:h-9 md:text-sm" />
+<div className="space-y-5 md:space-y-4">...</div>
+<Icon className="size-5 md:size-4" />
+
+// Wrong — desktop sizes on mobile
+<button className="h-9 px-4 text-sm">Save</button>
+```
+
+For components that only render on mobile (e.g. mobile drawers, bottom sheets), skip the `md:` override — just use the larger mobile sizes directly.
+
+### Checklist for mobile-ready components
+
+When building or reviewing any interactive component, verify:
+
+1. All tap targets are at least **44px** tall/wide
+2. Text inputs use `text-base` (16px) to prevent iOS zoom
+3. Icons in interactive elements are at least `size-5` (20px)
+4. Adjacent interactive elements have at least **8px** gap
+5. Body/label text is at least `text-sm` (14px), primary text `text-base` (16px)
+6. Padding is generous enough for comfortable finger tapping (`py-3`+ for list items, `p-4`+ for cards)

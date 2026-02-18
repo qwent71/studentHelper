@@ -25,17 +25,17 @@ export function ThemeToggle() {
   useEffect(() => setMounted(true), []);
 
   if (!mounted) {
-    return <Skeleton className="h-9 w-[140px] rounded-md" />;
+    return <Skeleton className="h-10 w-[160px] rounded-md md:h-9 md:w-[140px]" />;
   }
 
   return (
     <Select value={theme} onValueChange={setTheme}>
-      <SelectTrigger className="w-[140px]">
+      <SelectTrigger className="h-10 w-[160px] text-base md:h-9 md:w-[140px] md:text-sm">
         <SelectValue placeholder="Theme" />
       </SelectTrigger>
       <SelectContent>
         {themes.map(({ value, label, icon: Icon }) => (
-          <SelectItem key={value} value={value}>
+          <SelectItem key={value} value={value} className="py-2.5 md:py-1.5">
             <Icon className="size-4" />
             {label}
           </SelectItem>

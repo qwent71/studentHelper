@@ -91,7 +91,7 @@ import { cn } from "@student-helper/ui/utils/cn";
 - Theme colors via CSS variables (HSL) in `@student-helper/ui/globals.css`
 - `dark:` variant or semantic tokens (`text-foreground`, `bg-background`)
 - Component variants via CVA, class merging via `cn()`
-- **Follow [`STYLE_GUIDE.md`](./STYLE_GUIDE.md)** — semantic tokens, surface hierarchy, CTA rules, interactive states, and Tailwind class conventions. Never use raw palette colors (`gray-*`, `slate-*`) for UI surfaces/text/borders; always use semantic tokens (`bg-background`, `text-foreground`, `border-border`, etc.).
+- **Follow [`STYLE_GUIDE.md`](./STYLE_GUIDE.md)** — semantic tokens, surface hierarchy, CTA rules, interactive states, mobile responsiveness rules, and Tailwind class conventions. Never use raw palette colors (`gray-*`, `slate-*`) for UI surfaces/text/borders; always use semantic tokens (`bg-background`, `text-foreground`, `border-border`, etc.). All interactive elements must meet **mobile touch target guidelines** (Section 9): min 44px tap targets, 16px input text (prevents iOS zoom), mobile-first sizing with `md:` desktop overrides.
 
 ### Adding a New Slice
 
