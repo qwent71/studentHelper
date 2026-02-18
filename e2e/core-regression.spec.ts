@@ -9,10 +9,10 @@ test.describe("Core frontend flows @regression", () => {
     ).toBeVisible();
     await expect(page.getByText("Student Helper")).toBeVisible();
 
-    await page.getByRole("button", { name: "Toggle theme" }).click();
-    await expect(page.getByRole("menuitem", { name: "Light" })).toBeVisible();
-    await expect(page.getByRole("menuitem", { name: "Dark" })).toBeVisible();
-    await expect(page.getByRole("menuitem", { name: "System" })).toBeVisible();
+    await page.getByRole("combobox").click();
+    await expect(page.getByRole("option", { name: "Light" })).toBeVisible();
+    await expect(page.getByRole("option", { name: "Dark" })).toBeVisible();
+    await expect(page.getByRole("option", { name: "System" })).toBeVisible();
   });
 
   test("UI-CORE-02: magic link sent page shows email and resend cooldown", async ({

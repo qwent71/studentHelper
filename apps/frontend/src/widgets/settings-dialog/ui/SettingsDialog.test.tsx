@@ -26,6 +26,7 @@ vi.mock("@student-helper/ui/web/hooks/use-mobile", () => ({
 vi.mock("@student-helper/ui/web/primitives/dialog", () => ({
   Dialog: ({ children, open }: React.PropsWithChildren<{ open: boolean }>) =>
     open ? <div data-testid="dialog">{children}</div> : null,
+  DialogClose: ({ children }: React.PropsWithChildren) => <div>{children}</div>,
   DialogContent: ({ children }: React.PropsWithChildren) => (
     <div data-testid="dialog-content">{children}</div>
   ),
