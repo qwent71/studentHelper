@@ -1,22 +1,20 @@
 "use client";
 
 import { ThemeToggle } from "@/features/toggle-theme";
+import { SettingsRow } from "../SettingsRow";
 
 export function AppearancePanel() {
   return (
-    <div className="space-y-4">
-      <p className="text-muted-foreground text-sm">
+    <div className="space-y-5 md:space-y-4">
+      <p className="text-muted-foreground text-base md:text-sm">
         Customize how the app looks and feels.
       </p>
-      <div className="flex items-center justify-between rounded-lg border p-4">
-        <div>
-          <p className="text-sm font-medium">Theme</p>
-          <p className="text-muted-foreground text-xs">
-            Choose between light, dark, or system theme.
-          </p>
-        </div>
+      <SettingsRow
+        title="Theme"
+        description="Choose between light, dark, or system theme."
+      >
         <ThemeToggle />
-      </div>
+      </SettingsRow>
     </div>
   );
 }

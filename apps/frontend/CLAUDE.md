@@ -91,6 +91,7 @@ import { cn } from "@student-helper/ui/utils/cn";
 - Theme colors via CSS variables (HSL) in `@student-helper/ui/globals.css`
 - `dark:` variant or semantic tokens (`text-foreground`, `bg-background`)
 - Component variants via CVA, class merging via `cn()`
+- **Follow [`STYLE_GUIDE.md`](./STYLE_GUIDE.md)** — semantic tokens, surface hierarchy, CTA rules, interactive states, mobile responsiveness rules, and Tailwind class conventions. Never use raw palette colors (`gray-*`, `slate-*`) for UI surfaces/text/borders; always use semantic tokens (`bg-background`, `text-foreground`, `border-border`, etc.). All interactive elements must meet **mobile touch target guidelines** (Section 9): min 44px tap targets, 16px input text (prevents iOS zoom), mobile-first sizing with `md:` desktop overrides.
 
 ### Adding a New Slice
 
@@ -113,6 +114,18 @@ Uses **Vitest** with jsdom environment.
 - Protected routes: `/app/*`, `/admin/*` — redirects to `/auth/login?callbackUrl=...` if unauthenticated
 - Auth routes: `/auth/*` — redirects to `/app` if already authenticated
 - Session validation via fetch to backend `GET /api/auth/get-session`
+
+## Visual Check via Playwright (REQUIRED)
+
+**After every frontend change**, once typecheck/lint/test pass, ALWAYS verify the affected page visually using MCP Playwright:
+
+1. `browser_navigate` to the relevant page (e.g. `http://localhost:3000/app`)
+2. `browser_snapshot` to inspect the accessibility tree and verify layout
+3. `browser_take_screenshot` if needed — **never save screenshots to the repo**, use `/tmp/` or omit filename (defaults to gitignored `.playwright-mcp/`)
+4. If the change affects mobile, `browser_resize` to 375×812 and re-check
+5. Delete any screenshot files you created
+
+This catches layout regressions and rendering issues that typecheck/lint cannot detect. **Do not skip this step.**
 
 ## Configuration
 
