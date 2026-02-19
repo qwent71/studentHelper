@@ -39,7 +39,7 @@ export function NavMain({ items }: NavMainProps) {
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+      <SidebarGroupLabel>Навигация</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => {
           const isActive =

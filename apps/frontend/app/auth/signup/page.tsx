@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { SignupForm } from "@/features/auth/signup";
 
 export const metadata: Metadata = {
-  title: "Sign up — Student Helper",
+  title: "Регистрация — Student Helper",
 };
 
 export default function SignupPage() {

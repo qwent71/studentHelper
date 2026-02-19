@@ -40,11 +40,11 @@ test.describe("Settings dialog @regression", () => {
       const dialog = page.locator("[role='dialog']");
       await expect(dialog).toBeVisible();
 
-      await expect(dialog.getByRole("button", { name: "Account" })).toBeVisible();
-      await expect(dialog.getByRole("button", { name: "Appearance" })).toBeVisible();
-      await expect(dialog.getByRole("button", { name: "Notifications" })).toBeVisible();
-      await expect(dialog.getByRole("button", { name: "Language & Region" })).toBeVisible();
-      await expect(dialog.getByRole("button", { name: "Privacy" })).toBeVisible();
+      await expect(dialog.getByRole("button", { name: "Аккаунт" })).toBeVisible();
+      await expect(dialog.getByRole("button", { name: "Внешний вид" })).toBeVisible();
+      await expect(dialog.getByRole("button", { name: "Уведомления" })).toBeVisible();
+      await expect(dialog.getByRole("button", { name: "Язык и регион" })).toBeVisible();
+      await expect(dialog.getByRole("button", { name: "Конфиденциальность" })).toBeVisible();
     });
 
     test("Clicking a category shows its content panel", async ({ page }) => {
@@ -57,9 +57,9 @@ test.describe("Settings dialog @regression", () => {
       const dialog = page.locator("[role='dialog']");
       await expect(dialog).toBeVisible();
 
-      await dialog.getByRole("button", { name: "Appearance" }).click();
+      await dialog.getByRole("button", { name: "Внешний вид" }).click();
       await expect(
-        dialog.getByText("Customize how the app looks and feels."),
+        dialog.getByText("Настройте внешний вид приложения."),
       ).toBeVisible();
     });
 
@@ -78,7 +78,7 @@ test.describe("Settings dialog @regression", () => {
 
       await page
         .locator("[role='dialog']")
-        .getByRole("button", { name: "Privacy" })
+        .getByRole("button", { name: "Конфиденциальность" })
         .click();
       await expect(page).toHaveURL(/#settings\/privacy/);
     });
@@ -93,7 +93,7 @@ test.describe("Settings dialog @regression", () => {
       const dialog = page.locator("[role='dialog']");
       await expect(dialog).toBeVisible();
 
-      await dialog.getByRole("button", { name: "Close" }).click();
+      await dialog.getByRole("button", { name: "Закрыть" }).click();
       await expect(dialog).not.toBeVisible();
     });
 
@@ -109,13 +109,13 @@ test.describe("Settings dialog @regression", () => {
       const footer = sidebar.first().locator("[data-slot='sidebar-footer']");
       await footer.locator("button").first().click();
 
-      // Click Personalization
-      await page.getByText("Personalization").click();
+      // Click personalization
+      await page.getByText("Персонализация").click();
 
       const dialog = page.locator("[role='dialog']");
       await expect(dialog).toBeVisible();
       await expect(
-        dialog.getByText("Customize how the app looks and feels."),
+        dialog.getByText("Настройте внешний вид приложения."),
       ).toBeVisible();
     });
 
@@ -130,15 +130,13 @@ test.describe("Settings dialog @regression", () => {
       const footer = sidebar.first().locator("[data-slot='sidebar-footer']");
       await footer.locator("button").first().click();
 
-      // The dropdown has a "Settings" item — click it
-      await page.getByRole("menuitem", { name: "Settings" }).click();
+      // The dropdown has a "Настройки" item — click it
+      await page.getByRole("menuitem", { name: "Настройки" }).click();
 
       const dialog = page.locator("[role='dialog']");
       await expect(dialog).toBeVisible();
       await expect(
-        dialog.getByText(
-          "Manage your account settings and profile information.",
-        ),
+        dialog.getByText("Управление настройками аккаунта и профиля."),
       ).toBeVisible();
     });
 
@@ -153,16 +151,16 @@ test.describe("Settings dialog @regression", () => {
       const footer = sidebar.first().locator("[data-slot='sidebar-footer']");
       await footer.locator("button").first().click();
 
-      await page.getByRole("menuitem", { name: "Log out" }).click();
+      await page.getByRole("menuitem", { name: "Выйти" }).click();
 
       // AlertDialog should be visible
-      await expect(page.getByText("Log out?")).toBeVisible();
+      await expect(page.getByText("Выйти?")).toBeVisible();
       await expect(
-        page.getByText("Are you sure you want to log out of your account?"),
+        page.getByText("Вы уверены, что хотите выйти из аккаунта?"),
       ).toBeVisible();
 
       // Cancel
-      await page.getByRole("button", { name: "Cancel" }).click();
+      await page.getByRole("button", { name: "Отмена" }).click();
 
       // Should still be on /app (not redirected to login)
       await expect(page).toHaveURL(/\/app/);
@@ -202,11 +200,11 @@ test.describe("Settings dialog @regression", () => {
       const footer = sidebar.locator("[data-slot='sidebar-footer']");
       await footer.locator("button").first().click();
 
-      // A drawer dialog should appear with "Settings" title
+      // A drawer dialog should appear with "Настройки" title
       const drawer = page.locator("[role='dialog']").last();
       await expect(drawer).toBeVisible();
       await expect(
-        drawer.getByRole("heading", { name: "Settings" }),
+        drawer.getByRole("heading", { name: "Настройки" }),
       ).toBeVisible();
     });
 
@@ -228,11 +226,11 @@ test.describe("Settings dialog @regression", () => {
       const drawer = page.locator("[role='dialog']").last();
       await expect(drawer).toBeVisible();
 
-      await expect(drawer.getByText("Account")).toBeVisible();
-      await expect(drawer.getByText("Appearance")).toBeVisible();
-      await expect(drawer.getByText("Notifications")).toBeVisible();
-      await expect(drawer.getByText("Language & Region")).toBeVisible();
-      await expect(drawer.getByText("Privacy")).toBeVisible();
+      await expect(drawer.getByText("Аккаунт")).toBeVisible();
+      await expect(drawer.getByText("Внешний вид")).toBeVisible();
+      await expect(drawer.getByText("Уведомления")).toBeVisible();
+      await expect(drawer.getByText("Язык и регион")).toBeVisible();
+      await expect(drawer.getByText("Конфиденциальность")).toBeVisible();
     });
 
     test("Tapping a category switches to content view", async ({ page }) => {
@@ -251,11 +249,11 @@ test.describe("Settings dialog @regression", () => {
       const drawer = page.locator("[role='dialog']").last();
       await expect(drawer).toBeVisible();
 
-      await drawer.getByText("Appearance").click();
+      await drawer.getByText("Внешний вид").click();
 
       // Content view should show category title and panel content
       await expect(
-        drawer.getByText("Customize how the app looks and feels."),
+        drawer.getByText("Настройте внешний вид приложения."),
       ).toBeVisible();
     });
 
@@ -276,17 +274,17 @@ test.describe("Settings dialog @regression", () => {
       await expect(drawer).toBeVisible();
 
       // Navigate to content view
-      await drawer.getByText("Appearance").click();
+      await drawer.getByText("Внешний вид").click();
       await expect(
-        drawer.getByText("Customize how the app looks and feels."),
+        drawer.getByText("Настройте внешний вид приложения."),
       ).toBeVisible();
 
       // Click back
-      await drawer.getByRole("button", { name: "Back" }).click();
+      await drawer.getByRole("button", { name: "Назад" }).click();
 
       // Should see category list again
-      await expect(drawer.getByText("Account")).toBeVisible();
-      await expect(drawer.getByText("Privacy")).toBeVisible();
+      await expect(drawer.getByText("Аккаунт")).toBeVisible();
+      await expect(drawer.getByText("Конфиденциальность")).toBeVisible();
     });
 
     test("Close button (X) closes the drawer", async ({ page }) => {
@@ -305,7 +303,7 @@ test.describe("Settings dialog @regression", () => {
       const drawer = page.locator("[data-slot='drawer-content']");
       await expect(drawer).toBeVisible();
 
-      await drawer.getByRole("button", { name: "Close" }).click();
+      await drawer.getByRole("button", { name: "Закрыть" }).click();
 
       // Drawer transitions to closed state
       await expect(drawer).toHaveAttribute("data-state", "closed");
@@ -329,8 +327,8 @@ test.describe("Settings dialog @regression", () => {
       const drawer = page.locator("[role='dialog']").last();
       await expect(drawer).toBeVisible();
 
-      await expect(drawer.getByText("Help")).toBeVisible();
-      await expect(drawer.getByText("Log out")).toBeVisible();
+      await expect(drawer.getByText("Помощь")).toBeVisible();
+      await expect(drawer.getByText("Выйти")).toBeVisible();
     });
   });
 });

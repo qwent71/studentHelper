@@ -5,14 +5,14 @@ test.describe("Core frontend flows @regression", () => {
     await page.goto("/");
 
     await expect(
-      page.getByRole("heading", { name: "Your AI-powered study companion" }),
+      page.getByRole("heading", { name: "Ваш ИИ-помощник для учёбы" }),
     ).toBeVisible();
     await expect(page.getByText("Student Helper")).toBeVisible();
 
     await page.getByRole("combobox").click();
-    await expect(page.getByRole("option", { name: "Light" })).toBeVisible();
-    await expect(page.getByRole("option", { name: "Dark" })).toBeVisible();
-    await expect(page.getByRole("option", { name: "System" })).toBeVisible();
+    await expect(page.getByRole("option", { name: "Светлая" })).toBeVisible();
+    await expect(page.getByRole("option", { name: "Тёмная" })).toBeVisible();
+    await expect(page.getByRole("option", { name: "Системная" })).toBeVisible();
   });
 
   test("UI-CORE-02: magic link sent page shows email and resend cooldown", async ({

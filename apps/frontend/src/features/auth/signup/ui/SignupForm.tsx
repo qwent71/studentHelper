@@ -36,7 +36,7 @@ export function SignupForm() {
     });
 
     if (signUpError) {
-      setError(signUpError.message ?? "Failed to create account");
+      setError(signUpError.message ?? "Не удалось создать аккаунт");
       setLoading(false);
       return;
     }

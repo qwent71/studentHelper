@@ -42,7 +42,7 @@ export function LoginForm() {
     });
 
     if (signInError) {
-      setError(signInError.message ?? "Failed to sign in");
+      setError(signInError.message ?? "Не удалось войти");
       setLoading(false);
       return;
     }

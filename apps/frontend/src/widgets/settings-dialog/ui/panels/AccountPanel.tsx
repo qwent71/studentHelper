@@ -1,6 +1,7 @@
 "use client";
 
 import { User } from "lucide-react";
+import { SettingsPanelEmptyState } from "./SettingsPanelEmptyState";
 
 export function AccountPanel() {
   return (
@@ -8,11 +9,11 @@ export function AccountPanel() {
       <p className="text-muted-foreground text-base md:text-sm">
         Управление настройками аккаунта и профиля.
       </p>
-      <div className="flex flex-col items-center justify-center text-center py-8 md:py-6">
-        <User className="size-10 md:size-8 text-muted-foreground mb-3" />
-        <h3 className="text-base md:text-sm font-medium">Скоро здесь появятся настройки</h3>
-        <p className="text-sm md:text-xs text-muted-foreground mt-1">Мы работаем над настройками аккаунта и профиля.</p>
-      </div>
+      <SettingsPanelEmptyState
+        icon={User}
+        title="Настройки аккаунта временно недоступны"
+        description="Откройте помощь, чтобы посмотреть доступные инструкции."
+      />
     </div>
   );
 }

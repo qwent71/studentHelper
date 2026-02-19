@@ -204,15 +204,18 @@ Layout: centered vertically and horizontally in the content area, `max-w-sm`, `t
 </div>
 ```
 
-**Settings panel (no CTA):**
+**Settings panel (action-only state):**
 
 ```tsx
 <div className="flex flex-col items-center justify-center text-center py-8 md:py-6">
   <User className="size-10 md:size-8 text-muted-foreground mb-3" />
-  <h3 className="text-base md:text-sm font-medium">Скоро здесь появятся настройки</h3>
+  <h3 className="text-base md:text-sm font-medium">Настройки аккаунта временно недоступны</h3>
   <p className="text-sm md:text-xs text-muted-foreground mt-1">
-    Мы работаем над настройками аккаунта и профиля.
+    Откройте помощь, чтобы посмотреть доступные инструкции.
   </p>
+  <Button variant="outline" size="sm" className="mt-3" asChild>
+    <a href="https://github.com" target="_blank" rel="noreferrer">Открыть помощь</a>
+  </Button>
 </div>
 ```
 
@@ -270,7 +273,7 @@ The target audience is schoolchildren — readability is critical. Distinguish b
 ```tsx
 // Correct
 <div className="bg-background text-foreground">
-<div className="bg-card text-card-foreground border-border">
+<div className="bg-card text-card-foreground border border-border">
 <span className="text-muted-foreground">
 
 // Wrong — never use raw palette colors for UI
@@ -570,6 +573,8 @@ Standard Tailwind spacing values used across components:
 | `shadow-lg` | `0 10px 15px -3px rgb(0 0 0 / 0.1)` | Dialogs, popovers |
 | `shadow-xl` | `0 20px 25px -5px rgb(0 0 0 / 0.1)` | Elevated overlays (rare) |
 
+> `shadow-xs` is available in Tailwind CSS 4 defaults. Use `shadow-sm` only when slightly stronger elevation is needed.
+
 ### 10.13 Z-Index
 
 | Token | Value | Usage |
@@ -652,6 +657,7 @@ All values are HSL (`hue saturation% lightness%`).
 
 - **One screen = one language.** Never mix languages within the same view (e.g. English heading + Russian button)
 - All user-facing text (labels, placeholders, tooltips, error messages, empty states) must be translated completely
+- Brand names may remain untranslated, but all surrounding UI text must match the screen locale
 - UI text in buttons must not wrap on mobile — use `text-balance` or shorter translations where needed
 
 ### Dates, numbers, currency

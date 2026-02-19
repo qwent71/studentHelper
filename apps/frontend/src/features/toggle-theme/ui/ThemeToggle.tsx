@@ -18,9 +18,34 @@ const themes = [
   { value: "system", label: "Системная", icon: Monitor },
 ] as const;
 
+type ThemeValue = (typeof themes)[number]["value"];
+
+const themeValues = new Set<ThemeValue>(themes.map(({ value }) => value));
+
+function isThemeValue(value: string | undefined): value is ThemeValue {
+  if (!value) return false;
+  return themeValues.has(value as ThemeValue);
+}
+
+export function getThemeSelectValue(
+  theme: string | undefined,
+  resolvedTheme: string | undefined,
+): ThemeValue {
+  if (isThemeValue(theme)) {
+    return theme;
+  }
+
+  if (isThemeValue(resolvedTheme)) {
+    return resolvedTheme;
+  }
+
+  return "system";
+}
+
 export function ThemeToggle() {
-  const { theme, setTheme } = useTheme();
+  const { theme, resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const selectValue = getThemeSelectValue(theme, resolvedTheme);
 
   useEffect(() => setMounted(true), []);
 
@@ -29,7 +54,7 @@ export function ThemeToggle() {
   }
 
   return (
-    <Select value={theme} onValueChange={setTheme}>
+    <Select value={selectValue} onValueChange={setTheme}>
       <SelectTrigger className="h-10 w-[160px] text-base md:h-9 md:w-[140px] md:text-sm">
         <SelectValue placeholder="Тема" />
       </SelectTrigger>

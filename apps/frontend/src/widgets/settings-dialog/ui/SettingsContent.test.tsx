@@ -37,6 +37,10 @@ describe("SettingsContent", () => {
         "Управление настройками аккаунта и профиля.",
       ),
     ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Открыть помощь" })).toHaveAttribute(
+      "href",
+      expect.stringContaining("https://github.com"),
+    );
   });
 
   it("renders AppearancePanel for categoryId=appearance", () => {
@@ -55,6 +59,10 @@ describe("SettingsContent", () => {
         "Настройте, как и когда вы получаете уведомления.",
       ),
     ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Открыть помощь" })).toHaveAttribute(
+      "href",
+      expect.stringContaining("https://github.com"),
+    );
   });
 
   it("renders LanguagePanel for categoryId=language", () => {
@@ -65,6 +73,10 @@ describe("SettingsContent", () => {
         "Настройте язык и региональные параметры.",
       ),
     ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Открыть помощь" })).toHaveAttribute(
+      "href",
+      expect.stringContaining("https://github.com"),
+    );
   });
 
   it("renders PrivacyPanel for categoryId=privacy", () => {
@@ -73,6 +85,10 @@ describe("SettingsContent", () => {
     expect(
       screen.getByText("Управление настройками конфиденциальности и данных."),
     ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Открыть помощь" })).toHaveAttribute(
+      "href",
+      expect.stringContaining("https://github.com"),
+    );
   });
 
   it("renders nothing for unknown categoryId", () => {

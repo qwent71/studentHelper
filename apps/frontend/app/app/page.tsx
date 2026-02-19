@@ -41,7 +41,7 @@ export default function AppPage() {
         {cards.map((card) => (
           <div
             key={card.title}
-            className="bg-card text-card-foreground rounded-lg border border-border p-5 md:p-4"
+            className="bg-card text-card-foreground rounded-lg border border-border p-5 shadow-sm dark:shadow-none md:p-4"
           >
             <div className="flex flex-col items-center justify-center text-center py-6 md:py-4">
               <card.icon className="size-10 md:size-8 text-muted-foreground mb-3" />

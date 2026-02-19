@@ -1,6 +1,7 @@
 "use client";
 
 import { Bell } from "lucide-react";
+import { SettingsPanelEmptyState } from "./SettingsPanelEmptyState";
 
 export function NotificationsPanel() {
   return (
@@ -8,11 +9,11 @@ export function NotificationsPanel() {
       <p className="text-muted-foreground text-base md:text-sm">
         Настройте, как и когда вы получаете уведомления.
       </p>
-      <div className="flex flex-col items-center justify-center text-center py-8 md:py-6">
-        <Bell className="size-10 md:size-8 text-muted-foreground mb-3" />
-        <h3 className="text-base md:text-sm font-medium">Скоро здесь появятся настройки</h3>
-        <p className="text-sm md:text-xs text-muted-foreground mt-1">Мы работаем над настройками уведомлений.</p>
-      </div>
+      <SettingsPanelEmptyState
+        icon={Bell}
+        title="Настройки уведомлений временно недоступны"
+        description="Откройте помощь, чтобы узнать о текущих возможностях."
+      />
     </div>
   );
 }
