@@ -34,7 +34,7 @@ describe("SettingsContent", () => {
     render(<SettingsContent />);
     expect(
       screen.getByText(
-        "Manage your account settings and profile information.",
+        "Управление настройками аккаунта и профиля.",
       ),
     ).toBeInTheDocument();
   });
@@ -43,7 +43,7 @@ describe("SettingsContent", () => {
     settingsDialogMock.categoryId = "appearance";
     render(<SettingsContent />);
     expect(
-      screen.getByText("Customize how the app looks and feels."),
+      screen.getByText("Настройте внешний вид приложения."),
     ).toBeInTheDocument();
   });
 
@@ -52,7 +52,7 @@ describe("SettingsContent", () => {
     render(<SettingsContent />);
     expect(
       screen.getByText(
-        "Configure how and when you receive notifications.",
+        "Настройте, как и когда вы получаете уведомления.",
       ),
     ).toBeInTheDocument();
   });
@@ -62,7 +62,7 @@ describe("SettingsContent", () => {
     render(<SettingsContent />);
     expect(
       screen.getByText(
-        "Set your preferred language and regional preferences.",
+        "Настройте язык и региональные параметры.",
       ),
     ).toBeInTheDocument();
   });
@@ -71,7 +71,7 @@ describe("SettingsContent", () => {
     settingsDialogMock.categoryId = "privacy";
     render(<SettingsContent />);
     expect(
-      screen.getByText("Manage your privacy and data settings."),
+      screen.getByText("Управление настройками конфиденциальности и данных."),
     ).toBeInTheDocument();
   });
 

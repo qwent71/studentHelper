@@ -72,7 +72,7 @@ export function SignupForm() {
             />
           </Field>
           <Field>
-            <FieldLabel htmlFor="email">Email</FieldLabel>
+            <FieldLabel htmlFor="email">Эл. почта</FieldLabel>
             <Input
               id="email"
               type="email"

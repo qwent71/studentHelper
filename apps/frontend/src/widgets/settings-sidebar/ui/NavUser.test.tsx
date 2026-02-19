@@ -173,8 +173,8 @@ describe("NavUser", () => {
 
     it("does NOT render dropdown menu items", () => {
       render(<NavUser user={testUser} />);
-      expect(screen.queryByText("Personalization")).not.toBeInTheDocument();
-      expect(screen.queryByText("Help")).not.toBeInTheDocument();
+      expect(screen.queryByText("Персонализация")).not.toBeInTheDocument();
+      expect(screen.queryByText("Помощь")).not.toBeInTheDocument();
     });
   });
 
@@ -194,7 +194,7 @@ describe("NavUser", () => {
 
     it("Personalization calls openToCategory('appearance')", () => {
       render(<NavUser user={testUser} />);
-      fireEvent.click(screen.getByText("Personalization"));
+      fireEvent.click(screen.getByText("Персонализация"));
       expect(settingsDialogMock.openToCategory).toHaveBeenCalledWith(
         "appearance",
       );
@@ -204,7 +204,7 @@ describe("NavUser", () => {
       render(<NavUser user={testUser} />);
       const settingsButtons = screen.getAllByRole("button");
       const settingsBtn = settingsButtons.find(
-        (btn) => btn.textContent?.trim() === "Settings",
+        (btn) => btn.textContent?.trim() === "Настройки",
       )!;
       fireEvent.click(settingsBtn);
       expect(settingsDialogMock.setOpen).toHaveBeenCalledWith(true);
@@ -213,7 +213,7 @@ describe("NavUser", () => {
     it("Help calls window.open", () => {
       const openSpy = vi.spyOn(window, "open").mockImplementation(() => null);
       render(<NavUser user={testUser} />);
-      fireEvent.click(screen.getByText("Help"));
+      fireEvent.click(screen.getByText("Помощь"));
       expect(openSpy).toHaveBeenCalledWith("https://github.com", "_blank");
       openSpy.mockRestore();
     });
@@ -222,21 +222,21 @@ describe("NavUser", () => {
       render(<NavUser user={testUser} />);
       expect(screen.queryByTestId("alert-dialog")).not.toBeInTheDocument();
 
-      fireEvent.click(screen.getByText("Log out"));
+      fireEvent.click(screen.getByText("Выйти"));
       expect(screen.getByTestId("alert-dialog")).toBeInTheDocument();
-      expect(screen.getByText("Log out?")).toBeInTheDocument();
+      expect(screen.getByText("Выйти?")).toBeInTheDocument();
     });
 
     it("Cancel in AlertDialog does not call signOut", () => {
       render(<NavUser user={testUser} />);
-      fireEvent.click(screen.getByText("Log out"));
+      fireEvent.click(screen.getByText("Выйти"));
       fireEvent.click(screen.getByTestId("cancel-logout"));
       expect(signOutMock).not.toHaveBeenCalled();
     });
 
     it("Confirm sign out calls signOut, pushes /auth/login, calls refresh", async () => {
       render(<NavUser user={testUser} />);
-      fireEvent.click(screen.getByText("Log out"));
+      fireEvent.click(screen.getByText("Выйти"));
       fireEvent.click(screen.getByTestId("confirm-logout"));
 
       await waitFor(() => {

@@ -107,25 +107,25 @@ describe("SettingsDialog", () => {
   it("renders all categories in desktop sidebar", () => {
     render(<SettingsDialog />);
 
-    expect(screen.getAllByText("Account").length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText("Appearance")).toBeInTheDocument();
-    expect(screen.getByText("Notifications")).toBeInTheDocument();
-    expect(screen.getByText("Language & Region")).toBeInTheDocument();
-    expect(screen.getByText("Privacy")).toBeInTheDocument();
+    expect(screen.getAllByText("Аккаунт").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText("Внешний вид")).toBeInTheDocument();
+    expect(screen.getByText("Уведомления")).toBeInTheDocument();
+    expect(screen.getByText("Язык и регион")).toBeInTheDocument();
+    expect(screen.getByText("Конфиденциальность")).toBeInTheDocument();
   });
 
   it("shows panel content directly for selected category", () => {
     render(<SettingsDialog />);
 
     expect(
-      screen.getByText("Manage your account settings and profile information."),
+      screen.getByText("Управление настройками аккаунта и профиля."),
     ).toBeInTheDocument();
   });
 
   it("clicking a category calls selectCategory", () => {
     render(<SettingsDialog />);
 
-    fireEvent.click(screen.getByText("Appearance"));
+    fireEvent.click(screen.getByText("Внешний вид"));
 
     expect(settingsDialogMock.selectCategory).toHaveBeenCalledWith("appearance");
   });

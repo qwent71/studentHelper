@@ -41,6 +41,9 @@ yarn-error.log*
 # Playwright MCP
 .playwright-mcp/
 
+# Screenshots
+screenshots/
+
 # Misc
 .DS_Store
 *.pem

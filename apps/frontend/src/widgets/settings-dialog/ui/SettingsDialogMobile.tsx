@@ -90,7 +90,7 @@ function MobileActionItems() {
             className="border-border/50 hover:bg-accent flex w-full items-center gap-4 border-b px-4 py-3.5 text-base transition-colors"
           >
             <HelpCircle className="text-muted-foreground size-5" />
-            <span className="flex-1 text-left">Help</span>
+            <span className="flex-1 text-left">Помощь</span>
             <ExternalLink className="text-muted-foreground size-4" />
           </button>
           <button
@@ -99,7 +99,7 @@ function MobileActionItems() {
             className="text-destructive hover:bg-accent flex w-full items-center gap-4 px-4 py-3.5 text-base transition-colors"
           >
             <LogOut className="size-5" />
-            <span className="flex-1 text-left">Log out</span>
+            <span className="flex-1 text-left">Выйти</span>
           </button>
         </div>
       </div>
@@ -107,14 +107,14 @@ function MobileActionItems() {
       <AlertDialog open={showLogoutConfirm} onOpenChange={setShowLogoutConfirm}>
         <AlertDialogContent size="sm">
           <AlertDialogHeader>
-            <AlertDialogTitle>Log out?</AlertDialogTitle>
+            <AlertDialogTitle>Выйти?</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to log out of your account?
+              Вы уверены, что хотите выйти из аккаунта?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isSigningOut}>
-              Cancel
+              Отмена
             </AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
@@ -124,7 +124,7 @@ function MobileActionItems() {
                 void handleSignOut();
               }}
             >
-              {isSigningOut ? "Logging out..." : "Log out"}
+              {isSigningOut ? "Выход..." : "Выйти"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -152,7 +152,7 @@ export function SettingsDialogMobile() {
               className="shrink-0"
             >
               <ArrowLeft className="size-5" />
-              <span className="sr-only">Back</span>
+              <span className="sr-only">Назад</span>
             </Button>
           ) : (
             <div className="size-8 shrink-0" />
@@ -160,10 +160,10 @@ export function SettingsDialogMobile() {
           <DrawerTitle className="flex-1 text-center text-lg">
             {mobileView === "content" && activeCategory
               ? activeCategory.label
-              : "Settings"}
+              : "Настройки"}
           </DrawerTitle>
           <DrawerDescription className="sr-only">
-            Application settings and preferences
+            Настройки и параметры приложения
           </DrawerDescription>
           <Button
             variant="ghost"
@@ -172,7 +172,7 @@ export function SettingsDialogMobile() {
             className="shrink-0"
           >
             <X className="size-5" />
-            <span className="sr-only">Close</span>
+            <span className="sr-only">Закрыть</span>
           </Button>
         </DrawerHeader>
         <div className="h-[80vh] overflow-y-auto">

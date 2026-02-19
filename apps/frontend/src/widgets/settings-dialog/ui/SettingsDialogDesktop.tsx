@@ -1,14 +1,11 @@
 "use client";
 
-import { X } from "lucide-react";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
   DialogTitle,
 } from "@student-helper/ui/web/primitives/dialog";
-import { Button } from "@student-helper/ui/web/primitives/button";
 import {
   Sidebar,
   SidebarContent,
@@ -34,23 +31,14 @@ export function SettingsDialogDesktop() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent
         className="overflow-hidden p-0 md:max-h-[500px] md:max-w-[700px] lg:max-w-[800px]"
-        showCloseButton={false}
       >
-        <DialogTitle className="sr-only">Settings</DialogTitle>
+        <DialogTitle className="sr-only">Настройки</DialogTitle>
         <DialogDescription className="sr-only">
-          Application settings and preferences
+          Настройки и параметры приложения
         </DialogDescription>
         <SidebarProvider className="items-start">
-          <Sidebar collapsible="none" className="hidden md:flex">
-            <div className="flex h-12 shrink-0 items-center px-2">
-              <DialogClose asChild>
-                <Button variant="ghost" size="icon-xs">
-                  <X className="size-4" />
-                  <span className="sr-only">Close</span>
-                </Button>
-              </DialogClose>
-            </div>
-            <SidebarContent>
+          <Sidebar collapsible="none" className="hidden border-r border-border md:flex">
+            <SidebarContent className="pt-2">
               <SidebarGroup>
                 <SidebarGroupContent>
                   <SidebarMenu>
@@ -73,7 +61,7 @@ export function SettingsDialogDesktop() {
           <main className="flex h-[480px] flex-1 flex-col overflow-hidden">
             <header className="flex h-12 shrink-0 items-center gap-2 px-4">
               <h2 className="text-sm font-medium">
-                {activeCategory?.label ?? "Settings"}
+                {activeCategory?.label ?? "Настройки"}
               </h2>
             </header>
             <div className="flex-1 overflow-y-auto p-4">

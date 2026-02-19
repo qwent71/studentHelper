@@ -149,23 +149,23 @@ describe("SettingsDialogMobile", () => {
   });
 
   describe("list view (mobileView=list)", () => {
-    it("shows 'Settings' title in header", () => {
+    it("shows 'Настройки' title in header", () => {
       render(<SettingsDialogMobile />);
-      expect(screen.getByText("Settings")).toBeInTheDocument();
+      expect(screen.getByText("Настройки")).toBeInTheDocument();
     });
 
     it("renders all 5 category buttons", () => {
       render(<SettingsDialogMobile />);
-      expect(screen.getByText("Account")).toBeInTheDocument();
-      expect(screen.getByText("Appearance")).toBeInTheDocument();
-      expect(screen.getByText("Notifications")).toBeInTheDocument();
-      expect(screen.getByText("Language & Region")).toBeInTheDocument();
-      expect(screen.getByText("Privacy")).toBeInTheDocument();
+      expect(screen.getByText("Аккаунт")).toBeInTheDocument();
+      expect(screen.getByText("Внешний вид")).toBeInTheDocument();
+      expect(screen.getByText("Уведомления")).toBeInTheDocument();
+      expect(screen.getByText("Язык и регион")).toBeInTheDocument();
+      expect(screen.getByText("Конфиденциальность")).toBeInTheDocument();
     });
 
     it("clicking category calls selectCategory", () => {
       render(<SettingsDialogMobile />);
-      fireEvent.click(screen.getByText("Appearance"));
+      fireEvent.click(screen.getByText("Внешний вид"));
       expect(settingsDialogMock.selectCategory).toHaveBeenCalledWith(
         "appearance",
       );
@@ -173,18 +173,18 @@ describe("SettingsDialogMobile", () => {
 
     it("shows Help and Log out action items", () => {
       render(<SettingsDialogMobile />);
-      expect(screen.getByText("Help")).toBeInTheDocument();
-      expect(screen.getByText("Log out")).toBeInTheDocument();
+      expect(screen.getByText("Помощь")).toBeInTheDocument();
+      expect(screen.getByText("Выйти")).toBeInTheDocument();
     });
 
     it("does NOT show Back button", () => {
       render(<SettingsDialogMobile />);
-      expect(screen.queryByText("Back")).not.toBeInTheDocument();
+      expect(screen.queryByText("Назад")).not.toBeInTheDocument();
     });
 
     it("Close button calls setOpen(false)", () => {
       render(<SettingsDialogMobile />);
-      fireEvent.click(screen.getByText("Close"));
+      fireEvent.click(screen.getByText("Закрыть"));
       expect(settingsDialogMock.setOpen).toHaveBeenCalledWith(false);
     });
   });
@@ -199,17 +199,17 @@ describe("SettingsDialogMobile", () => {
       render(<SettingsDialogMobile />);
       // The header should show "Account" when in content view with categoryId=account
       const header = screen.getByTestId("drawer-header");
-      expect(header).toHaveTextContent("Account");
+      expect(header).toHaveTextContent("Аккаунт");
     });
 
     it("shows Back button", () => {
       render(<SettingsDialogMobile />);
-      expect(screen.getByText("Back")).toBeInTheDocument();
+      expect(screen.getByText("Назад")).toBeInTheDocument();
     });
 
     it("Back button calls goBack()", () => {
       render(<SettingsDialogMobile />);
-      fireEvent.click(screen.getByText("Back"));
+      fireEvent.click(screen.getByText("Назад"));
       expect(settingsDialogMock.goBack).toHaveBeenCalled();
     });
 
@@ -217,15 +217,15 @@ describe("SettingsDialogMobile", () => {
       render(<SettingsDialogMobile />);
       expect(
         screen.getByText(
-          "Manage your account settings and profile information.",
+          "Управление настройками аккаунта и профиля.",
         ),
       ).toBeInTheDocument();
     });
 
     it("does NOT show category list", () => {
       render(<SettingsDialogMobile />);
-      expect(screen.queryByText("Notifications")).not.toBeInTheDocument();
-      expect(screen.queryByText("Privacy")).not.toBeInTheDocument();
+      expect(screen.queryByText("Уведомления")).not.toBeInTheDocument();
+      expect(screen.queryByText("Конфиденциальность")).not.toBeInTheDocument();
     });
   });
 
@@ -234,21 +234,21 @@ describe("SettingsDialogMobile", () => {
       render(<SettingsDialogMobile />);
       expect(screen.queryByTestId("alert-dialog")).not.toBeInTheDocument();
 
-      fireEvent.click(screen.getByText("Log out"));
+      fireEvent.click(screen.getByText("Выйти"));
       expect(screen.getByTestId("alert-dialog")).toBeInTheDocument();
-      expect(screen.getByText("Log out?")).toBeInTheDocument();
+      expect(screen.getByText("Выйти?")).toBeInTheDocument();
     });
 
     it("Cancel does not sign out", () => {
       render(<SettingsDialogMobile />);
-      fireEvent.click(screen.getByText("Log out"));
+      fireEvent.click(screen.getByText("Выйти"));
       fireEvent.click(screen.getByTestId("cancel-logout"));
       expect(signOutMock).not.toHaveBeenCalled();
     });
 
     it("Confirm calls signOut, setOpen(false), router.push, router.refresh", async () => {
       render(<SettingsDialogMobile />);
-      fireEvent.click(screen.getByText("Log out"));
+      fireEvent.click(screen.getByText("Выйти"));
       fireEvent.click(screen.getByTestId("confirm-logout"));
 
       await waitFor(() => {

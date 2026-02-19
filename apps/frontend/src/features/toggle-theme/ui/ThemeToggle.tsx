@@ -13,9 +13,9 @@ import {
 import { Skeleton } from "@student-helper/ui/web/primitives/skeleton";
 
 const themes = [
-  { value: "light", label: "Light", icon: Sun },
-  { value: "dark", label: "Dark", icon: Moon },
-  { value: "system", label: "System", icon: Monitor },
+  { value: "light", label: "Светлая", icon: Sun },
+  { value: "dark", label: "Тёмная", icon: Moon },
+  { value: "system", label: "Системная", icon: Monitor },
 ] as const;
 
 export function ThemeToggle() {
@@ -31,7 +31,7 @@ export function ThemeToggle() {
   return (
     <Select value={theme} onValueChange={setTheme}>
       <SelectTrigger className="h-10 w-[160px] text-base md:h-9 md:w-[140px] md:text-sm">
-        <SelectValue placeholder="Theme" />
+        <SelectValue placeholder="Тема" />
       </SelectTrigger>
       <SelectContent>
         {themes.map(({ value, label, icon: Icon }) => (

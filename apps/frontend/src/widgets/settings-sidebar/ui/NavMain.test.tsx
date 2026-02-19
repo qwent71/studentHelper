@@ -76,25 +76,25 @@ describe("NavMain", () => {
 
   it("renders all nav items", () => {
     render(<NavMain items={mainNavItems} />);
-    expect(screen.getByText("Dashboard")).toBeInTheDocument();
-    expect(screen.getByText("Chat")).toBeInTheDocument();
-    expect(screen.getByText("Textbooks")).toBeInTheDocument();
-    expect(screen.getByText("AI Tutor")).toBeInTheDocument();
-    expect(screen.getByText("Uploads")).toBeInTheDocument();
-    expect(screen.getByText("Settings")).toBeInTheDocument();
+    expect(screen.getByText("Главная")).toBeInTheDocument();
+    expect(screen.getByText("Чат")).toBeInTheDocument();
+    expect(screen.getByText("Учебники")).toBeInTheDocument();
+    expect(screen.getByText("ИИ-репетитор")).toBeInTheDocument();
+    expect(screen.getByText("Загрузки")).toBeInTheDocument();
+    expect(screen.getByText("Настройки")).toBeInTheDocument();
   });
 
   it("renders correct href on each link", () => {
     render(<NavMain items={mainNavItems} />);
-    expect(screen.getByText("Dashboard").closest("a")).toHaveAttribute(
+    expect(screen.getByText("Главная").closest("a")).toHaveAttribute(
       "href",
       "/app",
     );
-    expect(screen.getByText("Chat").closest("a")).toHaveAttribute(
+    expect(screen.getByText("Чат").closest("a")).toHaveAttribute(
       "href",
       "/app/chat",
     );
-    expect(screen.getByText("Settings").closest("a")).toHaveAttribute(
+    expect(screen.getByText("Настройки").closest("a")).toHaveAttribute(
       "href",
       "/app/settings",
     );
@@ -103,30 +103,30 @@ describe("NavMain", () => {
   it("marks Dashboard active on exact /app match", () => {
     currentPathname = "/app";
     render(<NavMain items={mainNavItems} />);
-    const dashboardItem = screen.getByText("Dashboard").closest("[data-active]");
+    const dashboardItem = screen.getByText("Главная").closest("[data-active]");
     expect(dashboardItem).toHaveAttribute("data-active", "true");
   });
 
   it("marks Chat active on /app/chat, not Dashboard", () => {
     currentPathname = "/app/chat";
     render(<NavMain items={mainNavItems} />);
-    const dashboardItem = screen.getByText("Dashboard").closest("[data-active]");
+    const dashboardItem = screen.getByText("Главная").closest("[data-active]");
     expect(dashboardItem).toHaveAttribute("data-active", "false");
 
-    const chatItem = screen.getByText("Chat").closest("[data-active]");
+    const chatItem = screen.getByText("Чат").closest("[data-active]");
     expect(chatItem).toHaveAttribute("data-active", "true");
   });
 
   it("marks Chat active on /app/chat/123 (startsWith)", () => {
     currentPathname = "/app/chat/123";
     render(<NavMain items={mainNavItems} />);
-    const chatItem = screen.getByText("Chat").closest("[data-active]");
+    const chatItem = screen.getByText("Чат").closest("[data-active]");
     expect(chatItem).toHaveAttribute("data-active", "true");
   });
 
   it("Settings click prevents default and calls setOpen(true)", () => {
     render(<NavMain items={mainNavItems} />);
-    const settingsLink = screen.getByText("Settings").closest("a")!;
+    const settingsLink = screen.getByText("Настройки").closest("a")!;
     const event = new MouseEvent("click", { bubbles: true, button: 0 });
     const preventDefaultSpy = vi.spyOn(event, "preventDefault");
 
@@ -138,35 +138,35 @@ describe("NavMain", () => {
 
   it("Settings click does NOT intercept when metaKey pressed", () => {
     render(<NavMain items={mainNavItems} />);
-    const settingsLink = screen.getByText("Settings").closest("a")!;
+    const settingsLink = screen.getByText("Настройки").closest("a")!;
     fireEvent.click(settingsLink, { metaKey: true });
     expect(settingsDialogMock.setOpen).not.toHaveBeenCalled();
   });
 
   it("Settings click does NOT intercept when ctrlKey pressed", () => {
     render(<NavMain items={mainNavItems} />);
-    const settingsLink = screen.getByText("Settings").closest("a")!;
+    const settingsLink = screen.getByText("Настройки").closest("a")!;
     fireEvent.click(settingsLink, { ctrlKey: true });
     expect(settingsDialogMock.setOpen).not.toHaveBeenCalled();
   });
 
   it("Settings click does NOT intercept when shiftKey pressed", () => {
     render(<NavMain items={mainNavItems} />);
-    const settingsLink = screen.getByText("Settings").closest("a")!;
+    const settingsLink = screen.getByText("Настройки").closest("a")!;
     fireEvent.click(settingsLink, { shiftKey: true });
     expect(settingsDialogMock.setOpen).not.toHaveBeenCalled();
   });
 
   it("Settings click does NOT intercept when altKey pressed", () => {
     render(<NavMain items={mainNavItems} />);
-    const settingsLink = screen.getByText("Settings").closest("a")!;
+    const settingsLink = screen.getByText("Настройки").closest("a")!;
     fireEvent.click(settingsLink, { altKey: true });
     expect(settingsDialogMock.setOpen).not.toHaveBeenCalled();
   });
 
   it("regular nav link click does NOT call setOpen", () => {
     render(<NavMain items={mainNavItems} />);
-    const chatLink = screen.getByText("Chat").closest("a")!;
+    const chatLink = screen.getByText("Чат").closest("a")!;
     fireEvent.click(chatLink);
     expect(settingsDialogMock.setOpen).not.toHaveBeenCalled();
   });

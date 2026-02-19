@@ -103,7 +103,7 @@ export function LoginForm() {
               <form onSubmit={handleMagicLinkSubmit}>
                 <FieldGroup>
                   <Field>
-                    <FieldLabel htmlFor="magic-email">Email</FieldLabel>
+                    <FieldLabel htmlFor="magic-email">Эл. почта</FieldLabel>
                     <Input
                       id="magic-email"
                       type="email"
@@ -127,7 +127,7 @@ export function LoginForm() {
             <form onSubmit={handlePasswordSubmit}>
               <FieldGroup>
                 <Field>
-                  <FieldLabel htmlFor="email">Email</FieldLabel>
+                  <FieldLabel htmlFor="email">Эл. почта</FieldLabel>
                   <Input
                     id="email"
                     type="email"

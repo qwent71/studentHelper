@@ -7,11 +7,11 @@ export function AppearancePanel() {
   return (
     <div className="space-y-5 md:space-y-4">
       <p className="text-muted-foreground text-base md:text-sm">
-        Customize how the app looks and feels.
+        Настройте внешний вид приложения.
       </p>
       <SettingsRow
-        title="Theme"
-        description="Choose between light, dark, or system theme."
+        title="Тема"
+        description="Выберите светлую, тёмную или системную тему."
       >
         <ThemeToggle />
       </SettingsRow>

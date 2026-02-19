@@ -126,6 +126,8 @@ Skip borders when:
 
 > Base `--radius` = `0.5rem` (8px). All other radii are derived from it.
 
+> **Border shorthand**: Always write `border border-border` — `border` adds 1px solid, `border-border` sets the semantic color. Without `border-border`, Tailwind uses its default gray.
+
 ## 5. Interactive States
 
 Apply consistently to ALL interactive elements (buttons, list items, inputs).
@@ -140,6 +142,8 @@ Apply consistently to ALL interactive elements (buttons, list items, inputs).
 ### Focus ring standard
 
 All interactive elements use: `focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]`
+
+> On colored surfaces, add `ring-offset-2 ring-offset-background` to ensure the focus ring has a visible gap from the element.
 
 ## 6. Component Patterns
 
@@ -180,6 +184,37 @@ Every list, table, or content area must handle the "no data" case with a structu
 Layout: centered vertically and horizontally in the content area, `max-w-sm`, `text-center`.
 
 > **"Coming soon" is not a production empty state.** Placeholder text like "Coming soon" or em-dashes are acceptable only in dev/staging. Production UI must always have a meaningful empty state with an action.
+
+#### Empty state examples
+
+**Dashboard card (with CTA):**
+
+```tsx
+<div className="bg-card text-card-foreground rounded-lg border border-border p-5 md:p-4">
+  <div className="flex flex-col items-center justify-center text-center py-6 md:py-4">
+    <MessageSquare className="size-10 md:size-8 text-muted-foreground mb-3" />
+    <h3 className="text-sm font-medium">Недавние чаты</h3>
+    <p className="text-xs text-muted-foreground mt-1">
+      Здесь будут ваши последние диалоги с ИИ-репетитором
+    </p>
+    <Button variant="outline" size="sm" className="mt-3" asChild>
+      <Link href="/app/chat">Начать чат</Link>
+    </Button>
+  </div>
+</div>
+```
+
+**Settings panel (no CTA):**
+
+```tsx
+<div className="flex flex-col items-center justify-center text-center py-8 md:py-6">
+  <User className="size-10 md:size-8 text-muted-foreground mb-3" />
+  <h3 className="text-base md:text-sm font-medium">Скоро здесь появятся настройки</h3>
+  <p className="text-sm md:text-xs text-muted-foreground mt-1">
+    Мы работаем над настройками аккаунта и профиля.
+  </p>
+</div>
+```
 
 ### Alerts / Toasts / Banners
 
@@ -279,9 +314,10 @@ Based on Apple HIG (44pt), Material Design (48dp), and WCAG 2.5.5 (44px):
 
 | Element | Mobile | Desktop | Tailwind pattern |
 |---|---|---|---|
-| Body / primary text | 16px | 14px | `text-base md:text-sm` |
+| UI chrome (labels, nav, meta) | 16px | 14px | `text-base md:text-sm` |
 | Secondary text | 14px | 12px | `text-sm md:text-xs` |
 | Form input text | 16px (mandatory) | 14px | `text-base md:text-sm` |
+| Content text | 16px | 16px | `text-base` |
 | Button text | 16px | 14px | `text-base md:text-sm` |
 | Page heading (H1) | 24px | 24–28px | `text-2xl` |
 | Section heading (H2) | 20px | 18–20px | `text-xl md:text-lg` |
@@ -490,6 +526,8 @@ All icons are from **lucide-react**. Default auto-sizing in components: `[&_svg:
 | Title font | 18px, semibold | `text-lg font-semibold` |
 | Description font | 14px, `muted-foreground` | `text-sm text-muted-foreground` |
 | Close button | Top-right, `opacity-70 hover:opacity-100` | — |
+
+> Close buttons go in the **top-right** corner. Use the built-in `showCloseButton` prop on `DialogContent`. Never place close in sidebar or left header.
 | Settings dialog | `max-w-[700px]` / `lg:max-w-[800px]`, `max-h-[500px]` | Custom override |
 
 > **Surface rule**: All floating containers (Dialog, AlertDialog, Sheet, DropdownMenu, Select, Tooltip) use `bg-popover`, never `bg-background`. This ensures they visually sit above page content in both light and dark modes.
@@ -553,6 +591,8 @@ All values are HSL (`hue saturation% lightness%`).
 | `foreground` | `0 0% 3.9%` | Primary text |
 | `card` | `0 0% 100%` | Card surface |
 | `popover` | `0 0% 100%` | Popover surface |
+| `card-foreground` | `0 0% 3.9%` | Text on card surface |
+| `popover-foreground` | `0 0% 3.9%` | Text on popover surface |
 | `primary` | `0 0% 9%` | Primary action bg |
 | `primary-foreground` | `0 0% 98%` | Text on primary |
 | `secondary` | `0 0% 96.1%` | Secondary action bg |
@@ -567,6 +607,8 @@ All values are HSL (`hue saturation% lightness%`).
 | `ring` | `0 0% 3.9%` | Focus ring |
 | `overlay` | `0 0% 0%` | Backdrop overlay |
 
+> Apply as `bg-overlay/50`. The `--overlay` CSS var must be defined in the theme for this to work.
+
 #### Dark mode
 
 | Token | HSL | Role |
@@ -575,6 +617,8 @@ All values are HSL (`hue saturation% lightness%`).
 | `foreground` | `0 0% 98%` | Primary text |
 | `card` | `0 0% 11.5%` | Card surface |
 | `popover` | `0 0% 16%` | Popover surface (most lifted) |
+| `card-foreground` | `0 0% 98%` | Text on card surface |
+| `popover-foreground` | `0 0% 98%` | Text on popover surface |
 | `primary` | `0 0% 98%` | Primary action bg |
 | `primary-foreground` | `0 0% 9%` | Text on primary |
 | `secondary` | `0 0% 14.9%` | Secondary action bg |

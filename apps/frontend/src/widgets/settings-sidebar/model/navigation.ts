@@ -16,10 +16,10 @@ export interface NavItem {
 }
 
 export const mainNavItems: NavItem[] = [
-  { title: "Dashboard", url: "/app", icon: LayoutDashboard },
-  { title: "Chat", url: "/app/chat", icon: MessageSquare },
-  { title: "Textbooks", url: "/app/textbooks", icon: BookOpen },
-  { title: "AI Tutor", url: "/app/tutor", icon: BrainCircuit },
-  { title: "Uploads", url: "/app/uploads", icon: Upload },
-  { title: "Settings", url: "/app/settings", icon: Settings, action: "open-settings" },
+  { title: "Главная", url: "/app", icon: LayoutDashboard },
+  { title: "Чат", url: "/app/chat", icon: MessageSquare },
+  { title: "Учебники", url: "/app/textbooks", icon: BookOpen },
+  { title: "ИИ-репетитор", url: "/app/tutor", icon: BrainCircuit },
+  { title: "Загрузки", url: "/app/uploads", icon: Upload },
+  { title: "Настройки", url: "/app/settings", icon: Settings, action: "open-settings" },
 ];

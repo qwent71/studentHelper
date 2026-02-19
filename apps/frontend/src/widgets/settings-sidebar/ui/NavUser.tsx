@@ -163,14 +163,14 @@ export function NavUser({ user }: NavUserProps) {
                 onSelect={() => openToCategory("appearance")}
               >
                 <Paintbrush className={menuIconClass} />
-                Personalization
+                Персонализация
               </DropdownMenuItem>
               <DropdownMenuItem
                 className={menuItemClass}
                 onSelect={() => setOpen(true)}
               >
                 <Settings className={menuIconClass} />
-                Settings
+                Настройки
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
@@ -182,14 +182,15 @@ export function NavUser({ user }: NavUserProps) {
                 }
               >
                 <HelpCircle className={menuIconClass} />
-                Help
+                Помощь
               </DropdownMenuItem>
               <DropdownMenuItem
                 className={menuItemClass}
+                variant="destructive"
                 onSelect={() => setShowLogoutConfirm(true)}
               >
                 <LogOut className={menuIconClass} />
-                Log out
+                Выйти
               </DropdownMenuItem>
             </DropdownMenuGroup>
           </DropdownMenuContent>
@@ -198,14 +199,14 @@ export function NavUser({ user }: NavUserProps) {
         <AlertDialog open={showLogoutConfirm} onOpenChange={setShowLogoutConfirm}>
           <AlertDialogContent size="sm">
             <AlertDialogHeader>
-              <AlertDialogTitle>Log out?</AlertDialogTitle>
+              <AlertDialogTitle>Выйти?</AlertDialogTitle>
               <AlertDialogDescription>
-                Are you sure you want to log out of your account?
+                Вы уверены, что хотите выйти из аккаунта?
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel disabled={isSigningOut}>
-                Cancel
+                Отмена
               </AlertDialogCancel>
               <AlertDialogAction
                 variant="destructive"
@@ -215,7 +216,7 @@ export function NavUser({ user }: NavUserProps) {
                   void handleSignOut();
                 }}
               >
-                {isSigningOut ? "Logging out..." : "Log out"}
+                {isSigningOut ? "Выход..." : "Выйти"}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

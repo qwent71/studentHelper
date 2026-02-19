@@ -10,27 +10,27 @@ export interface SettingsCategory {
 export const settingsCategories: SettingsCategory[] = [
   {
     id: "account",
-    label: "Account",
+    label: "Аккаунт",
     icon: User,
   },
   {
     id: "appearance",
-    label: "Appearance",
+    label: "Внешний вид",
     icon: Paintbrush,
   },
   {
     id: "notifications",
-    label: "Notifications",
+    label: "Уведомления",
     icon: Bell,
   },
   {
     id: "language",
-    label: "Language & Region",
+    label: "Язык и регион",
     icon: Globe,
   },
   {
     id: "privacy",
-    label: "Privacy",
+    label: "Конфиденциальность",
     icon: Shield,
   },
 ];
