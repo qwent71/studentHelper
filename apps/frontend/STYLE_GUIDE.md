@@ -12,8 +12,9 @@ Never use raw Tailwind color classes (`gray-*`, `blue-*`, etc.) for UI surfaces,
 |---|---|---|
 | `background` | Base app layer | Page background, root container |
 | `card` | Elevated layer 1 | Content blocks, sections |
-| `popover` | Elevated layer 2 | Menus, tooltips, selects, dialogs |
+| `popover` | Elevated layer 2 | Menus, tooltips, selects, dialogs, sheets |
 | `muted` | Subdued layer | Secondary sections, helper areas, metadata backgrounds |
+| `overlay` | Backdrop dimming | Dialog/drawer/sheet overlay (`bg-overlay/50`). Never use raw `bg-black/…` |
 
 ### Text
 
@@ -74,6 +75,13 @@ background (darkest) → card (one step lighter) → muted (muted tone) → popo
 | `ghost` | No fill/border | Toolbars, icon buttons, inline nav |
 | `destructive` | Filled, danger tone | Irreversible actions only — never competes with primary |
 | `link` | Text-only, underline | Inline navigation, "Learn more" |
+
+### OAuth / social login buttons
+
+OAuth buttons (Google, Apple, etc.) must **never** compete visually with the primary CTA:
+- Always use `secondary` or `outline` variant
+- Never use `default` (filled primary) variant for OAuth
+- On auth screens the primary CTA is "Log in" / "Sign up" — OAuth is an alternative path, not the main one
 
 ### CTA placement pattern
 
@@ -160,6 +168,19 @@ All interactive elements use: `focus-visible:border-ring focus-visible:ring-ring
 - Container: `popover` surface + explicit border (especially in dark mode)
 - Focus trap required, initial focus on primary action or first field
 
+### Empty States
+
+Every list, table, or content area must handle the "no data" case with a structured empty state:
+
+1. **Icon** — `muted-foreground`, relevant to context (e.g. `MessageSquare` for empty chat list)
+2. **Title** — `foreground`, concise (e.g. "No chats yet")
+3. **Description** — `muted-foreground`, one sentence explaining what to do
+4. **CTA** — `primary` button to create/start (e.g. "Start a new chat") + optional `link` for help
+
+Layout: centered vertically and horizontally in the content area, `max-w-sm`, `text-center`.
+
+> **"Coming soon" is not a production empty state.** Placeholder text like "Coming soon" or em-dashes are acceptable only in dev/staging. Production UI must always have a meaningful empty state with an action.
+
 ### Alerts / Toasts / Banners
 
 Convey meaning through: icon + title + text + left-side stripe/border + surface differentiation. Color is supplementary, not the only signal.
@@ -174,6 +195,18 @@ Achieve emphasis through **contrast + size + position**, not just font-weight:
 | Body | Standard `foreground` |
 | Caption/Meta | `muted-foreground`, smaller size |
 | Links | Underline + hover highlight |
+
+### Content vs. chrome typography
+
+The target audience is schoolchildren — readability is critical. Distinguish between **UI chrome** (menus, labels, metadata) and **content** (chat messages, explanations, study material):
+
+| Context | Desktop | Mobile | Tailwind |
+|---|---|---|---|
+| UI chrome (labels, nav, meta) | 14px | 16px | `text-sm md:text-sm` / `text-base md:text-sm` |
+| Content (chat, explanations, text) | 16px | 16px | `text-base` |
+| Long-form content (articles, study material) | 16–18px | 16px | `text-base md:text-base` or `md:text-lg` |
+
+> **Rule**: Chat messages, AI responses, and educational content always use `text-base` (16px) or larger, even on desktop. Never shrink content text to 14px — that size is reserved for UI chrome only.
 
 ### Font families
 
@@ -447,17 +480,19 @@ All icons are from **lucide-react**. Default auto-sizing in components: `[&_svg:
 | Property | Value | Tailwind |
 |---|---|---|
 | Max width | 512px (sm), customizable | `sm:max-w-lg` |
-| Background | `background` | `bg-background` |
+| Background | `popover` | `bg-popover` |
 | Border radius | 8px | `rounded-lg` |
 | Border | `border` | — |
 | Padding | 24px | `p-6` |
 | Shadow | `shadow-lg` | — |
 | Gap between elements | 16px | `gap-4` |
-| Overlay | `bg-black/50` | Semi-transparent backdrop |
+| Overlay | `overlay/50` | `bg-overlay/50` — semantic token, never raw `bg-black/…` |
 | Title font | 18px, semibold | `text-lg font-semibold` |
 | Description font | 14px, `muted-foreground` | `text-sm text-muted-foreground` |
 | Close button | Top-right, `opacity-70 hover:opacity-100` | — |
 | Settings dialog | `max-w-[700px]` / `lg:max-w-[800px]`, `max-h-[500px]` | Custom override |
+
+> **Surface rule**: All floating containers (Dialog, AlertDialog, Sheet, DropdownMenu, Select, Tooltip) use `bg-popover`, never `bg-background`. This ensures they visually sit above page content in both light and dark modes.
 
 ### 10.10 Form Fields
 
@@ -530,6 +565,7 @@ All values are HSL (`hue saturation% lightness%`).
 | `border` | `0 0% 89.8%` | Borders |
 | `input` | `0 0% 89.8%` | Input borders |
 | `ring` | `0 0% 3.9%` | Focus ring |
+| `overlay` | `0 0% 0%` | Backdrop overlay |
 
 #### Dark mode
 
@@ -537,20 +573,21 @@ All values are HSL (`hue saturation% lightness%`).
 |---|---|---|
 | `background` | `0 0% 7.8%` | Page background |
 | `foreground` | `0 0% 98%` | Primary text |
-| `card` | `0 0% 10.5%` | Card surface |
-| `popover` | `0 0% 12.5%` | Popover surface |
+| `card` | `0 0% 11.5%` | Card surface |
+| `popover` | `0 0% 16%` | Popover surface (most lifted) |
 | `primary` | `0 0% 98%` | Primary action bg |
 | `primary-foreground` | `0 0% 9%` | Text on primary |
 | `secondary` | `0 0% 14.9%` | Secondary action bg |
 | `secondary-foreground` | `0 0% 98%` | Text on secondary |
 | `muted` | `0 0% 14.9%` | Muted surface |
 | `muted-foreground` | `0 0% 63.9%` | Secondary text |
-| `accent` | `0 0% 16.5%` | Hover/active highlight |
+| `accent` | `0 0% 17.5%` | Hover/active highlight |
 | `accent-foreground` | `0 0% 98%` | Text on accent |
 | `destructive` | `0 62.8% 30.6%` | Destructive action |
-| `border` | `0 0% 17.5%` | Borders |
-| `input` | `0 0% 17.5%` | Input borders |
+| `border` | `0 0% 20%` | Borders |
+| `input` | `0 0% 20%` | Input borders |
 | `ring` | `0 0% 83.1%` | Focus ring |
+| `overlay` | `0 0% 0%` | Backdrop overlay |
 
 #### Sidebar tokens
 
@@ -564,3 +601,21 @@ All values are HSL (`hue saturation% lightness%`).
 | `sidebar-accent-foreground` | `240 5.9% 10%` | `240 4.8% 95.9%` |
 | `sidebar-border` | `220 13% 91%` | `240 3.7% 15.9%` |
 | `sidebar-ring` | `217.2 91.2% 59.8%` | `217.2 91.2% 59.8%` |
+
+## 11. Internationalization (i18n)
+
+### Language consistency
+
+- **One screen = one language.** Never mix languages within the same view (e.g. English heading + Russian button)
+- All user-facing text (labels, placeholders, tooltips, error messages, empty states) must be translated completely
+- UI text in buttons must not wrap on mobile — use `text-balance` or shorter translations where needed
+
+### Dates, numbers, currency
+
+- Format dates and numbers via `Intl.DateTimeFormat` / `Intl.NumberFormat` with the user's locale
+- Never hardcode date formats like `MM/DD/YYYY` — always derive from locale
+
+### Right-to-left (RTL) readiness
+
+- Use logical CSS properties (`ms-*`, `me-*`, `ps-*`, `pe-*`, `start`, `end`) instead of physical (`ml-*`, `mr-*`, `left`, `right`) where possible
+- This isn't required for launch but makes future RTL support easier
