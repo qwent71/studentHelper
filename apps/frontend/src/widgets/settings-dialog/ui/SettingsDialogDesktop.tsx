@@ -42,7 +42,7 @@ export function SettingsDialogDesktop() {
         </DialogDescription>
         <SidebarProvider className="items-start">
           <Sidebar collapsible="none" className="hidden md:flex">
-            <div className="flex h-12 shrink-0 items-center border-b px-2">
+            <div className="flex h-12 shrink-0 items-center px-2">
               <DialogClose asChild>
                 <Button variant="ghost" size="icon-xs">
                   <X className="size-4" />
@@ -71,7 +71,7 @@ export function SettingsDialogDesktop() {
             </SidebarContent>
           </Sidebar>
           <main className="flex h-[480px] flex-1 flex-col overflow-hidden">
-            <header className="flex h-12 shrink-0 items-center gap-2 border-b px-4">
+            <header className="flex h-12 shrink-0 items-center gap-2 px-4">
               <h2 className="text-sm font-medium">
                 {activeCategory?.label ?? "Settings"}
               </h2>
