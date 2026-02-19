@@ -81,12 +81,16 @@ vi.mock("@student-helper/ui/web/primitives/button", () => ({
   Button: ({
     children,
     onClick,
+    asChild,
     ...props
-  }: React.PropsWithChildren<{ onClick?: () => void }>) => (
-    <button type="button" onClick={onClick} {...props}>
-      {children}
-    </button>
-  ),
+  }: React.PropsWithChildren<{ onClick?: () => void; asChild?: boolean }>) => {
+    void asChild;
+    return (
+      <button type="button" onClick={onClick} {...props}>
+        {children}
+      </button>
+    );
+  },
 }));
 
 // Mock ThemeToggle

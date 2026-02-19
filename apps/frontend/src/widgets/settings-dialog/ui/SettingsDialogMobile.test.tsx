@@ -103,17 +103,22 @@ vi.mock("@student-helper/ui/web/primitives/button", () => ({
   Button: ({
     children,
     onClick,
+    asChild,
     ...props
   }: React.PropsWithChildren<{
     onClick?: React.MouseEventHandler;
+    asChild?: boolean;
     variant?: string;
     size?: string;
     className?: string;
-  }>) => (
-    <button type="button" onClick={onClick} {...props}>
-      {children}
-    </button>
-  ),
+  }>) => {
+    void asChild;
+    return (
+      <button type="button" onClick={onClick} {...props}>
+        {children}
+      </button>
+    );
+  },
 }));
 
 vi.mock("@student-helper/ui/utils/cn", () => ({

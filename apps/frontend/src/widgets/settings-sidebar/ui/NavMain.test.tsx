@@ -26,7 +26,15 @@ vi.mock("next/link", () => ({
     href: string;
     onClick?: React.MouseEventHandler<HTMLAnchorElement>;
   }>) => (
-    <a href={href} onClick={onClick}>
+    <a
+      href={href}
+      onClick={(event) => {
+        onClick?.(event);
+        if (!event.defaultPrevented) {
+          event.preventDefault();
+        }
+      }}
+    >
       {children}
     </a>
   ),
@@ -127,7 +135,11 @@ describe("NavMain", () => {
   it("Settings click prevents default and calls setOpen(true)", () => {
     render(<NavMain items={mainNavItems} />);
     const settingsLink = screen.getByText("Настройки").closest("a")!;
-    const event = new MouseEvent("click", { bubbles: true, button: 0 });
+    const event = new MouseEvent("click", {
+      bubbles: true,
+      cancelable: true,
+      button: 0,
+    });
     const preventDefaultSpy = vi.spyOn(event, "preventDefault");
 
     fireEvent(settingsLink, event);
