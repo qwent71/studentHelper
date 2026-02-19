@@ -44,8 +44,8 @@ import type { User } from "@/entities/user";
 import { signOut } from "@/shared/auth/auth-client";
 import { useSettingsDialog } from "@/shared/settings";
 
-const menuItemClass = "gap-3 px-3 py-1.5 text-[13px]";
-const menuIconClass = "size-[18px] text-muted-foreground";
+const menuItemClass = "gap-2 px-2 py-1.5 text-sm";
+const menuIconClass = "size-4 text-muted-foreground";
 
 interface NavUserProps {
   user: User;
@@ -130,14 +130,14 @@ export function NavUser({ user }: NavUserProps) {
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            className="w-[calc(var(--radix-dropdown-menu-trigger-width)+8px)] min-w-56 rounded-xl p-1.5"
+            className="w-[calc(var(--radix-dropdown-menu-trigger-width)+8px)] min-w-56 rounded-md p-1"
             side="top"
             align="start"
             alignOffset={-4}
             sideOffset={8}
           >
             <DropdownMenuLabel className="p-0 font-normal">
-              <div className="flex items-center gap-3 px-3 py-2 text-left text-sm">
+              <div className="flex items-center gap-2 px-2 py-1.5 text-left text-sm">
                 <Avatar className="size-9 rounded-lg">
                   {user.image && (
                     <AvatarImage src={user.image} alt={user.name} />
@@ -156,7 +156,7 @@ export function NavUser({ user }: NavUserProps) {
                 </div>
               </div>
             </DropdownMenuLabel>
-            <DropdownMenuSeparator className="mx-3" />
+            <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem
                 className={menuItemClass}
@@ -173,7 +173,7 @@ export function NavUser({ user }: NavUserProps) {
                 Settings
               </DropdownMenuItem>
             </DropdownMenuGroup>
-            <DropdownMenuSeparator className="mx-3" />
+            <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem
                 className={menuItemClass}
