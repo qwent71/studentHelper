@@ -497,3 +497,60 @@
 - Stub modules (account, uploads, textbook, family, rag) don't require isolation yet as they have no real functionality — auth should be added when implementing their features
 - The `logAccessViolation` pattern is reusable for future modules (e.g., TASK-012 document uploads, TASK-014 RAG retrieval)
 - Pre-existing failure in `smoke.test.ts` (`GET /chat` returns 404) still present — not related to this task
+
+## TASK-020 — First-use screen: text input, image upload, CTA "Решить задачу" (DONE)
+
+**Date**: 2026-02-20
+**Branch**: pdr
+**Commit**: 9562eb1
+
+### What was done
+- **New feature**: `src/features/solve-task/` — first-use "Solve Task" feature
+  - `SolveTaskForm.tsx` — client component with full solve-task flow
+  - Text input via `Textarea` (shadcn primitive, newly installed)
+  - Image upload via drag-and-drop or click-to-select file picker
+  - Image preview with remove button
+  - File validation: PNG/JPG/WebP/BMP, max 10 MB
+  - CTA "Решить задачу" disabled until user provides text or image
+- **API integration** via direct `fetch` calls (Eden treaty had type inference issues with complex Elysia routes):
+  - `createSession()` — POST `/chat/sessions` with `mode: "fast"`
+  - `sendTextMessage()` — POST `/chat/sessions/:id/messages` with JSON body
+  - `sendImageMessage()` — POST `/chat/sessions/:id/messages/image` with FormData
+- **State machine** (`SolveState`): idle → loading → done/error
+  - Loading: spinner animation + "Анализируем задачу и готовим решение..."
+  - Done: "Решение" card with `whitespace-pre-wrap` text rendering
+  - Error: destructive text below form with retry available
+  - "Решить другую задачу" button resets entire form
+- **Page updated**: `app/app/page.tsx` replaced placeholder dashboard with `SolveTaskForm`
+- **New UI primitive**: `packages/ui/src/web/primitives/textarea.tsx` via `shadcn add textarea`
+
+### Test results
+
+**SolveTaskForm.test.tsx** (10 unit tests, all pass):
+1. Renders hero text and input elements
+2. Disables CTA button when no input is provided
+3. Enables CTA button when text is entered
+4. Submits text and shows AI response
+5. Creates session with mode fast and sends text message
+6. Shows loading state during request
+7. Shows error when session creation fails
+8. Shows error when network fails
+9. Resets form when "Решить другую задачу" is clicked
+10. Sends image via FormData when file is selected
+
+**Visual checks** (Playwright MCP):
+- Desktop (1280x720): layout correct, all elements visible
+- Mobile (375x812): responsive layout, sidebar collapses, content stacks vertically
+- Interactive flow: typed text → CTA enabled → submitted → response rendered → reset works
+
+### Acceptance criteria verification
+1. **User sees one main scenario: upload or paste a problem** — The /app page shows a focused hero with text input, image upload drop zone, and single CTA. No distracting dashboard cards or multiple actions.
+2. **Submission starts fast-mode and shows loading state** — `createSession()` creates a `fast` mode session; loading state shows spinner + descriptive message; inputs are disabled during processing.
+3. **Time to first useful result visually fits within 1-2 minutes** — Single-step flow (enter task → click CTA → see response) with immediate feedback. Loading spinner provides visual progress indication.
+
+### Notes for next tasks
+- TASK-020 unblocks: TASK-021 (OCR fallback UX), TASK-024 (step-by-step explanation UI), TASK-027 (streaming responses)
+- Used direct `fetch` instead of Eden treaty for API calls due to complex Elysia route type inference issues — future tasks may want to revisit once Eden/Elysia types improve
+- Response rendering is plain `whitespace-pre-wrap` — TASK-027 (streaming) will likely add proper markdown rendering
+- Image upload validated client-side (type + size) matching backend's Elysia schema (10MB, png/jpeg/webp/bmp)
+- Pre-existing failure in `smoke.test.ts` (`GET /chat` returns 404) still present — not related to this task

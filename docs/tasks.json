@@ -376,7 +376,7 @@
         "Шаг 3: Проверить корректный рендер ответа и состояний loading/error"
       ],
       "dependencies": ["TASK-007"],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "TASK-021",
