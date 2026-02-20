@@ -375,3 +375,65 @@
 - Self-harm pattern ordering matters — must come before violence patterns to match "kill myself" before "kill"
 - Pre-existing failure in `smoke.test.ts` (`GET /chat` returns 404) still present — not related to this task
 - Pre-existing lint warning in `chat-pipeline.test.ts` (unused `beforeEach` import) — not related to this task
+
+## TASK-016 — MVP authentication: Google OAuth + magic link + protected sessions (DONE)
+
+**Date**: 2026-02-20
+**Branch**: pdr
+**Commits**: 5378855, dd5fb04
+
+### What was done
+- **Google OAuth social provider** (`apps/backend/src/auth.ts`):
+  - Added `socialProviders.google` to Better Auth config, conditionally enabled when `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` env vars are present
+  - Env vars already defined in schema as optional (`packages/config/src/env.ts`) and documented in `.env.example`
+- **Magic link fix**: Changed `isDev` check from `env.NODE_ENV === "development"` to `env.NODE_ENV !== "production"` so magic links work in both dev and test environments (logs to console in non-prod)
+- **Frontend Google OAuth buttons** (`LoginForm.tsx`, `SignupForm.tsx`):
+  - Wired up Google OAuth buttons with `signIn.social({ provider: "google" })` calls
+  - Added loading state (`googleLoading`) with "Перенаправление..." text
+  - Buttons disabled during loading and during other form submissions
+  - Login form respects `callbackUrl` search param for post-auth redirect
+  - Signup form uses `errorCallbackURL: "/auth/signup"` for error redirects
+- **Test environment**: Added `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` test placeholders to `applyTestEnv()` and `.env.test`
+- **Pre-existing fix**: Removed unused `beforeEach` import in `chat-pipeline.test.ts` to fix zero-warnings lint policy
+
+### Test results
+
+**auth-flows.test.ts** (13 integration tests, all pass):
+1. Google OAuth returns redirect URL to accounts.google.com
+2. Google OAuth redirect_uri points to backend callback
+3. Rejects unsupported social provider
+4. Magic link sends and creates verification record
+5. Magic link works for unregistered email
+6. Protected chat endpoint rejects without cookie (401)
+7. Protected template endpoint rejects without cookie (401)
+8. Protected centrifugo endpoint rejects without cookie (401)
+9. Protected endpoint allows access with valid session
+10. Protected endpoint rejects invalid/expired cookie
+11. Session invalidated after sign-out
+12. get-session returns user data with valid cookie
+13. get-session returns null without cookie
+
+**LoginForm.test.tsx** (6 frontend tests, all pass):
+1. Password login submits and redirects to /app
+2. Magic link submits and redirects to confirmation page
+3. Google OAuth button calls signIn.social with correct params
+4. Error shown when password login fails
+5. Error shown when magic link fails
+6. Google button shows loading state and disables during redirect
+
+**SignupForm.test.tsx** (3 frontend tests, all pass — 1 new):
+1. Form submits and redirects on success
+2. Error shown on signup failure
+3. Google OAuth button calls signIn.social with correct params
+
+### Acceptance criteria verification
+1. **Google OAuth login works** — `socialProviders.google` configured in Better Auth; frontend buttons call `signIn.social({ provider: "google" })`; integration test verifies redirect URL to `accounts.google.com` with correct `client_id`
+2. **Magic link login works** — Already implemented; `sendMagicLink` logs URL in non-production; integration test verifies 200 response and verification record creation
+3. **Protected endpoints inaccessible without valid session** — All module routes use `auth: true` macro; middleware redirects unauthenticated users to `/auth/login`; integration tests verify 401 for chat/template/centrifugo endpoints; visual check confirms `/app` redirects to login
+
+### Notes for next tasks
+- TASK-016 unblocks: TASK-017 (data isolation), TASK-029 (e2e critical path)
+- Google OAuth requires real `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` from Google Cloud Console for production use
+- The magic link `sendMagicLink` callback needs a real email service (SMTP/SendGrid/etc.) for production — currently throws in production mode
+- Pre-existing failure in `smoke.test.ts` (`GET /chat` returns 404) still present — not related to this task
+- Pre-existing lint warning in `chat-pipeline.test.ts` has been fixed (removed unused `beforeEach` import)

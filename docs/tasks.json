@@ -304,7 +304,7 @@
         "Шаг 3: Запросить приватный API без сессии и получить 401"
       ],
       "dependencies": ["TASK-001"],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "TASK-017",
