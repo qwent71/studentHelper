@@ -8,6 +8,13 @@ import {
   Upload,
 } from "lucide-react";
 import { Button } from "@student-helper/ui/web/primitives/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@student-helper/ui/web/primitives/card";
 
 const cards = [
   {
@@ -39,28 +46,28 @@ export default function AppPage() {
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {cards.map((card) => (
-          <div
+          <Card
             key={card.title}
-            className="bg-card text-card-foreground rounded-lg border border-border p-5 shadow-sm dark:shadow-none md:p-4"
+            className="gap-0 py-0 dark:shadow-none"
           >
-            <div className="flex flex-col items-center justify-center text-center py-6 md:py-4">
-              <card.icon className="size-10 md:size-8 text-muted-foreground mb-3" />
-              <h3 className="text-sm font-medium">{card.title}</h3>
-              <p className="text-xs text-muted-foreground mt-1">
+            <CardContent className="flex flex-col items-center justify-center py-6 text-center md:py-4">
+              <card.icon className="mb-3 size-10 text-muted-foreground md:size-8" />
+              <CardTitle className="text-sm">{card.title}</CardTitle>
+              <CardDescription className="mt-1 text-xs">
                 {card.description}
-              </p>
+              </CardDescription>
               {"cta" in card && (
                 <Button variant="outline" size="sm" className="mt-3" asChild>
                   <Link href={card.cta.href}>{card.cta.label}</Link>
                 </Button>
               )}
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         ))}
       </div>
 
       <div>
-        <h2 className="text-sm font-medium mb-3">Быстрые действия</h2>
+        <h2 className="mb-3 text-sm font-medium">Быстрые действия</h2>
         <div className="flex flex-wrap gap-2">
           {quickActions.map((action) => (
             <Button key={action.label} variant="outline" asChild>
