@@ -11,7 +11,6 @@ import { Button } from "@student-helper/ui/web/primitives/button";
 import {
   Card,
   CardContent,
-  CardHeader,
   CardTitle,
   CardDescription,
 } from "@student-helper/ui/web/primitives/card";
