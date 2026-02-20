@@ -437,3 +437,63 @@
 - The magic link `sendMagicLink` callback needs a real email service (SMTP/SendGrid/etc.) for production — currently throws in production mode
 - Pre-existing failure in `smoke.test.ts` (`GET /chat` returns 404) still present — not related to this task
 - Pre-existing lint warning in `chat-pipeline.test.ts` has been fixed (removed unused `beforeEach` import)
+
+## TASK-017 — Strict user data isolation for chats, templates, and documents (DONE)
+
+**Date**: 2026-02-20
+**Branch**: pdr
+**Commits**: ba0e24f, 9bf351f
+
+### What was done
+- **Schema**: Added `access_violation` to `safety_event_type` enum with migration
+- **Safety module** (`modules/safety/`):
+  - New `logAccessViolation(userId, resourceType, resourceId)` function for logging unauthorized access attempts
+  - Updated `CreateSafetyEventInput` to include `access_violation` event type
+  - Console warning logged with userId, resource type, and resource ID
+- **Chat service hardening** (`modules/chat/services.ts`):
+  - `getSession()`, `updateSession()`, `sendMessage()`, `getMessages()` now detect when a resource exists but belongs to a different user
+  - Access violation logged as `SafetyEvent` with severity `medium` before returning 404
+  - Distinguishes "not found" (no logging) from "unauthorized access" (logs security event)
+- **Chat repo defense-in-depth** (`modules/chat/repo.ts`):
+  - `updateSession()` now requires `userId` and filters by both `id` AND `userId` in WHERE clause
+- **Template service hardening** (`modules/template/services.ts`):
+  - `getById()`, `update()`, `delete()`, `setDefault()` now detect and log unauthorized access attempts
+- **Template repo defense-in-depth** (`modules/template/repo.ts`):
+  - `update()` and `delete()` now require `userId` and filter by both `id` AND `userId` in WHERE clause
+
+### Test results (14 integration tests, all pass)
+
+**data-isolation.test.ts** — Chat session isolation (5 tests):
+1. User B cannot get user A's chat session (returns 404)
+2. User B cannot update user A's chat session
+3. User B cannot send messages to user A's chat session
+4. User B cannot read user A's message history
+5. User B's session list does not contain user A's sessions
+
+**data-isolation.test.ts** — Template isolation (5 tests):
+6. User B cannot get user A's template (returns 404)
+7. User B cannot update user A's template
+8. User B cannot delete user A's template
+9. User B cannot set user A's template as default
+10. User B's template list does not contain user A's templates
+
+**data-isolation.test.ts** — Security event logging (4 tests):
+11. Logs `access_violation` event when user B tries to access user A's chat session
+12. Logs `access_violation` event when user B tries to access user A's template
+13. Does not log false positives for genuinely non-existent resources
+14. Logs multiple `access_violation` events for repeated unauthorized attempts
+
+### Acceptance criteria verification
+1. **No user can read other users' documents and chats** — All cross-user access attempts return 404 with no data leakage; list endpoints only return the requesting user's own resources; verified by integration tests 1–10
+2. **All user-scoped queries filter by user_id** — Service layer validates `resource.userId === userId` for all operations; repo-level write operations (`updateSession`, template `update`/`delete`) include `userId` in WHERE clause for defense-in-depth
+3. **Access violations are logged as security events** — `access_violation` events stored in `safety_event` table with `medium` severity, resource type, and resource ID; console warnings emitted; verified by integration tests 11–14
+
+### Migration verified
+- `migrations:down` — rolled back cleanly (drops `access_violation` from enum)
+- `migrations:up` — re-applied successfully
+
+### Notes for next tasks
+- TASK-017 is a security foundation — TASK-019 (data deletion) depends on it
+- Stub modules (account, uploads, textbook, family, rag) don't require isolation yet as they have no real functionality — auth should be added when implementing their features
+- The `logAccessViolation` pattern is reusable for future modules (e.g., TASK-012 document uploads, TASK-014 RAG retrieval)
+- Pre-existing failure in `smoke.test.ts` (`GET /chat` returns 404) still present — not related to this task
