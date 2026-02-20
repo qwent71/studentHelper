@@ -44,6 +44,7 @@ export const chatRepo = {
 
   async updateSession(
     id: string,
+    userId: string,
     data: Partial<{
       title: string;
       status: "active" | "completed" | "archived";
@@ -54,7 +55,7 @@ export const chatRepo = {
     const [row] = await db
       .update(chat)
       .set({ ...data, updatedAt: new Date() })
-      .where(eq(chat.id, id))
+      .where(and(eq(chat.id, id), eq(chat.userId, userId)))
       .returning();
     return row;
   },

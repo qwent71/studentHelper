@@ -10,6 +10,7 @@ import {
   getBlockedMessage,
   getFilteredResponseMessage,
   logSafetyEvent,
+  logAccessViolation,
   SAFETY_GUARDRAIL,
 } from "../safety";
 
@@ -106,7 +107,11 @@ export const chatService = {
 
   async getSession(sessionId: string, userId: string) {
     const session = await chatRepo.getSessionById(sessionId);
-    if (!session || session.userId !== userId) return null;
+    if (!session) return null;
+    if (session.userId !== userId) {
+      await logAccessViolation(userId, "chat_session", sessionId);
+      return null;
+    }
     return session;
   },
 
@@ -120,9 +125,13 @@ export const chatService = {
     data: { title?: string; status?: "active" | "completed" | "archived" },
   ) {
     const session = await chatRepo.getSessionById(sessionId);
-    if (!session || session.userId !== userId) return null;
+    if (!session) return null;
+    if (session.userId !== userId) {
+      await logAccessViolation(userId, "chat_session", sessionId);
+      return null;
+    }
 
-    const updateData: Parameters<typeof chatRepo.updateSession>[1] = {};
+    const updateData: Parameters<typeof chatRepo.updateSession>[2] = {};
     if (data.title) updateData.title = data.title;
     if (data.status) {
       updateData.status = data.status;
@@ -130,7 +139,7 @@ export const chatService = {
       if (data.status === "archived") updateData.archivedAt = new Date();
     }
 
-    return chatRepo.updateSession(sessionId, updateData);
+    return chatRepo.updateSession(sessionId, userId, updateData);
   },
 
   async sendMessage(
@@ -142,7 +151,11 @@ export const chatService = {
     templateId?: string,
   ) {
     const session = await chatRepo.getSessionById(sessionId);
-    if (!session || session.userId !== userId) return null;
+    if (!session) return null;
+    if (session.userId !== userId) {
+      await logAccessViolation(userId, "chat_session", sessionId);
+      return null;
+    }
     if (session.status !== "active") return null;
 
     let finalContent = content;
@@ -300,7 +313,11 @@ export const chatService = {
 
   async getMessages(sessionId: string, userId: string) {
     const session = await chatRepo.getSessionById(sessionId);
-    if (!session || session.userId !== userId) return null;
+    if (!session) return null;
+    if (session.userId !== userId) {
+      await logAccessViolation(userId, "chat_session", sessionId);
+      return null;
+    }
     return chatRepo.getMessagesByChatId(sessionId);
   },
 };

@@ -209,6 +209,7 @@ export const safetyEventTypeEnum = pgEnum("safety_event_type", [
   "blocked_prompt",
   "unsafe_response_filtered",
   "warning_shown",
+  "access_violation",
 ]);
 
 export const safetySeverityEnum = pgEnum("safety_severity", [

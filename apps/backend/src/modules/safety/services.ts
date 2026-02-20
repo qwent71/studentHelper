@@ -218,3 +218,23 @@ export async function logSafetyEvent(
     console.error("[safety] Failed to log safety event:", error);
   }
 }
+
+/**
+ * Log an access violation — when a user attempts to access a resource belonging to another user.
+ * Severity is always "medium" for access violations.
+ */
+export async function logAccessViolation(
+  userId: string,
+  resourceType: string,
+  resourceId: string,
+): Promise<void> {
+  console.warn(
+    `[security] Access violation: userId=${userId} attempted to access ${resourceType}=${resourceId}`,
+  );
+  await logSafetyEvent({
+    userId,
+    eventType: "access_violation",
+    severity: "medium",
+    details: JSON.stringify({ resourceType, resourceId }),
+  });
+}

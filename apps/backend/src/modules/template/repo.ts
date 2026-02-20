@@ -50,19 +50,19 @@ export const templateRepo = {
     });
   },
 
-  async update(id: string, data: UpdateTemplateInput) {
+  async update(id: string, userId: string, data: UpdateTemplateInput) {
     const [row] = await db
       .update(templatePreset)
       .set({ ...data, updatedAt: new Date() })
-      .where(eq(templatePreset.id, id))
+      .where(and(eq(templatePreset.id, id), eq(templatePreset.userId, userId)))
       .returning();
     return row;
   },
 
-  async delete(id: string) {
+  async delete(id: string, userId: string) {
     const [row] = await db
       .delete(templatePreset)
-      .where(eq(templatePreset.id, id))
+      .where(and(eq(templatePreset.id, id), eq(templatePreset.userId, userId)))
       .returning();
     return row;
   },

@@ -4,6 +4,7 @@ export {
   getBlockedMessage,
   getFilteredResponseMessage,
   logSafetyEvent,
+  logAccessViolation,
   SAFETY_GUARDRAIL,
   type SafetyCheckResult,
 } from "./services";

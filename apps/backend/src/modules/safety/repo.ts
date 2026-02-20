@@ -4,7 +4,7 @@ import { safetyEvent } from "../../db/schema";
 export interface CreateSafetyEventInput {
   userId: string;
   sessionId?: string | null;
-  eventType: "blocked_prompt" | "unsafe_response_filtered" | "warning_shown";
+  eventType: "blocked_prompt" | "unsafe_response_filtered" | "warning_shown" | "access_violation";
   severity: "low" | "medium" | "high";
   details?: string | null;
 }
