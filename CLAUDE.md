@@ -6,6 +6,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Package manager is **Bun** (v1.2.18). All root commands use **Turborepo**.
 
+**IMPORTANT: Before starting dev servers**, check if they are already running to avoid duplicate processes:
+- `lsof -i :3000` — check if frontend is already running
+- `lsof -i :3001` — check if backend is already running
+
+If the ports are already in use, do NOT start another instance. Reuse the existing process or stop it first.
+
 ```bash
 bun install              # Install dependencies
 bun run dev              # Start all apps/packages in dev mode
@@ -43,6 +49,12 @@ bun run db:studio                      # Open Drizzle Studio GUI
 ```
 
 ### Infrastructure
+
+**Before starting Docker**, check if containers are already running:
+```bash
+docker compose -f docker/docker-compose.yml ps         # Check running containers
+```
+If services are already up and healthy, do NOT run `up -d` again.
 
 ```bash
 docker compose -f docker/docker-compose.yml up -d     # Start Postgres, Redis, Centrifugo
@@ -82,6 +94,7 @@ Do NOT run `bun run typecheck` / `bun run lint` (full monorepo) or `bun run test
 3. `browser_take_screenshot` if needed for visual verification — **do NOT save screenshots to the repo directory**; use a temp path (e.g. `/tmp/screenshot.png`) or omit the `filename` param so they go to the default `.playwright-mcp/` dir (which is gitignored)
 4. If the change affects mobile, `browser_resize` to a mobile viewport (e.g. 375×812) and re-check
 5. After finishing, **delete any screenshot files** you created, or rely on `.playwright-mcp/` which is gitignored
+6. **ALWAYS call `browser_close`** after all visual checks are complete. Do not leave browser instances open — stale browsers waste resources and can cause issues on subsequent runs.
 
 **Port**: The frontend dev server runs on port **3000** (`FRONTEND_PORT=3000` in `.env`). Always use `http://localhost:3000` for Playwright MCP checks.
 

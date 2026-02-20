@@ -124,6 +124,7 @@ Uses **Vitest** with jsdom environment.
 3. `browser_take_screenshot` if needed — **never save screenshots to the repo**, use `/tmp/` or omit filename (defaults to gitignored `.playwright-mcp/`)
 4. If the change affects mobile, `browser_resize` to 375×812 and re-check
 5. Delete any screenshot files you created
+6. **ALWAYS call `browser_close`** when done. Do not leave browser instances open.
 
 This catches layout regressions and rendering issues that typecheck/lint cannot detect. **Do not skip this step.**
 
