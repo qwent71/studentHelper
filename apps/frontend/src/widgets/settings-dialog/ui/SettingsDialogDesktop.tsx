@@ -37,19 +37,8 @@ export function SettingsDialogDesktop() {
         <DialogDescription className="sr-only">
           Настройки и параметры приложения
         </DialogDescription>
-        <SidebarProvider
-          className="items-start"
-          style={
-            {
-              "--sidebar": "var(--popover)",
-              "--sidebar-foreground": "var(--popover-foreground)",
-              "--sidebar-accent": "var(--accent)",
-              "--sidebar-accent-foreground": "var(--accent-foreground)",
-              "--sidebar-border": "var(--border)",
-            } as React.CSSProperties
-          }
-        >
-          <Sidebar collapsible="none" className="hidden border-r border-border md:flex">
+        <SidebarProvider className="items-start">
+          <Sidebar collapsible="none" className="hidden md:flex">
             <SidebarContent className="pt-2">
               <SidebarGroup>
                 <SidebarGroupContent>

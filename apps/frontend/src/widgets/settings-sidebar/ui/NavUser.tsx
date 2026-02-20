@@ -157,7 +157,7 @@ export function NavUser({ user }: NavUserProps) {
                 </div>
               </div>
             </DropdownMenuLabel>
-            <DropdownMenuSeparator />
+            <DropdownMenuSeparator className="m-2" />
             <DropdownMenuGroup>
               <DropdownMenuItem
                 className={menuItemClass}
@@ -174,7 +174,7 @@ export function NavUser({ user }: NavUserProps) {
                 Настройки
               </DropdownMenuItem>
             </DropdownMenuGroup>
-            <DropdownMenuSeparator />
+            <DropdownMenuSeparator className="m-2" />
             <DropdownMenuGroup>
               <DropdownMenuItem
                 className={menuItemClass}
