@@ -70,7 +70,7 @@ export default function AppPage() {
         <h2 className="mb-3 text-sm font-medium">Быстрые действия</h2>
         <div className="flex flex-wrap gap-2">
           {quickActions.map((action) => (
-            <Button key={action.label} variant="outline" asChild>
+            <Button key={action.label} asChild>
               <Link href={action.href}>
                 <action.icon className="size-4" />
                 {action.label}
