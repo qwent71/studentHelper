@@ -8,7 +8,7 @@
   --font-mono: var(--font-geist-mono), monospace;
 }
 :root {
-  --background: hsl(223.8136 -172.5242% 100.0000%);
+  --background: hsl(223.8136 0.0004% 98.0256%);
   --foreground: hsl(223.8136 0.0000% 3.9388%);
   --card: hsl(223.8136 -172.5242% 100.0000%);
   --card-foreground: hsl(223.8136 0.0000% 3.9388%);
@@ -32,7 +32,7 @@
   --chart-3: hsl(221.4336 86.3731% 54.0624%);
   --chart-4: hsl(223.6587 78.7180% 47.8635%);
   --chart-5: hsl(226.5426 70.0108% 39.9224%);
-  --sidebar: hsl(223.8136 0.0004% 98.0256%);
+  --sidebar: hsl(223.8136 -172.5242% 100.0000%);
   --sidebar-foreground: hsl(223.8136 0.0000% 3.9388%);
   --sidebar-primary: hsl(223.8136 0.0000% 9.0527%);
   --sidebar-primary-foreground: hsl(223.8136 0.0004% 98.0256%);
@@ -63,9 +63,9 @@
 }
 
 .dark {
-  --background: hsl(223.8136 0.0000% 3.9388%);
+  --background: hsl(223.8136 0.0000% 9.0527%);
   --foreground: hsl(223.8136 0.0004% 98.0256%);
-  --card: hsl(223.8136 0.0000% 9.0527%);
+  --card: hsl(223.8136 0.0000% 12.0000%);
   --card-foreground: hsl(223.8136 0.0004% 98.0256%);
   --popover: hsl(223.8136 0.0000% 14.9382%);
   --popover-foreground: hsl(223.8136 0.0004% 98.0256%);
@@ -87,7 +87,7 @@
   --chart-3: hsl(221.4336 86.3731% 54.0624%);
   --chart-4: hsl(223.6587 78.7180% 47.8635%);
   --chart-5: hsl(226.5426 70.0108% 39.9224%);
-  --sidebar: hsl(223.8136 0.0000% 9.0527%);
+  --sidebar: hsl(223.8136 0.0000% 3.9388%);
   --sidebar-foreground: hsl(223.8136 0.0004% 98.0256%);
   --sidebar-primary: hsl(225.3451 84.0953% 48.9841%);
   --sidebar-primary-foreground: hsl(223.8136 0.0004% 98.0256%);
@@ -132,6 +132,14 @@
   --shadow-lg: 0 0 0 0 transparent;
   --shadow-xl: 0 0 0 0 transparent;
   --shadow-2xl: 0 0 0 0 transparent;
+}
+
+/* Border toggle — add .no-borders to <html> to disable all borders globally */
+.no-borders,
+.no-borders .dark {
+  --border: transparent;
+  --input: transparent;
+  --sidebar-border: transparent;
 }
 
 @layer base {
