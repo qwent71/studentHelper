@@ -1,6 +1,7 @@
 import {
   boolean,
   index,
+  jsonb,
   pgEnum,
   pgTable,
   text,
@@ -166,4 +167,137 @@ export const message = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [index("message_chat_id_idx").on(t.chatId)],
+);
+
+// ── Enums for new app tables ────────────────────────────────────────
+
+export const gradeLevelEnum = pgEnum("grade_level", [
+  "5",
+  "6",
+  "7",
+  "8",
+  "9",
+  "10",
+  "11",
+]);
+
+export const documentStatusEnum = pgEnum("document_status", [
+  "uploaded",
+  "processed",
+  "failed",
+]);
+
+export const safetyEventTypeEnum = pgEnum("safety_event_type", [
+  "blocked_prompt",
+  "unsafe_response_filtered",
+  "warning_shown",
+]);
+
+export const safetySeverityEnum = pgEnum("safety_severity", [
+  "low",
+  "medium",
+  "high",
+]);
+
+// ── StudentProfile ──────────────────────────────────────────────────
+
+export const studentProfile = pgTable(
+  "student_profile",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .notNull()
+      .unique()
+      .references(() => user.id, { onDelete: "cascade" }),
+    gradeLevel: gradeLevelEnum("grade_level"),
+    preferredLanguage: text("preferred_language").notNull().default("ru"),
+    defaultTemplateId: uuid("default_template_id").references(() => templatePreset.id, {
+      onDelete: "set null",
+    }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("student_profile_user_id_idx").on(t.userId)],
+);
+
+// ── TemplatePreset ──────────────────────────────────────────────────
+
+export const templatePreset = pgTable(
+  "template_preset",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    tone: text("tone").notNull().default("friendly"),
+    knowledgeLevel: text("knowledge_level").notNull().default("basic"),
+    outputFormat: text("output_format").notNull().default("full"),
+    outputLanguage: text("output_language").notNull().default("ru"),
+    responseLength: text("response_length").notNull().default("medium"),
+    extraPreferences: jsonb("extra_preferences"),
+    isDefault: boolean("is_default").notNull().default(false),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("template_preset_user_id_idx").on(t.userId),
+  ],
+);
+
+// ── UploadedDocument ────────────────────────────────────────────────
+
+export const uploadedDocument = pgTable(
+  "uploaded_document",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    fileName: text("file_name").notNull(),
+    fileType: text("file_type").notNull(),
+    storageKey: text("storage_key").notNull(),
+    status: documentStatusEnum("status").notNull().default("uploaded"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
+  },
+  (t) => [index("uploaded_document_user_id_idx").on(t.userId)],
+);
+
+// ── DocumentChunk ───────────────────────────────────────────────────
+
+export const documentChunk = pgTable(
+  "document_chunk",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    documentId: uuid("document_id")
+      .notNull()
+      .references(() => uploadedDocument.id, { onDelete: "cascade" }),
+    chunkText: text("chunk_text").notNull(),
+    embeddingVector: text("embedding_vector"),
+    pageRef: text("page_ref"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("document_chunk_document_id_idx").on(t.documentId)],
+);
+
+// ── SafetyEvent ─────────────────────────────────────────────────────
+
+export const safetyEvent = pgTable(
+  "safety_event",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    sessionId: uuid("session_id"),
+    eventType: safetyEventTypeEnum("event_type").notNull(),
+    severity: safetySeverityEnum("severity").notNull(),
+    details: text("details"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("safety_event_user_id_idx").on(t.userId),
+    index("safety_event_event_type_idx").on(t.eventType),
+  ],
 );
