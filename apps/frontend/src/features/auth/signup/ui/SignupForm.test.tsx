@@ -3,10 +3,11 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SignupForm } from "./SignupForm";
 
-const { pushMock, signUpEmailMock } = vi.hoisted(() => {
+const { pushMock, signUpEmailMock, signInSocialMock } = vi.hoisted(() => {
   return {
     pushMock: vi.fn(),
     signUpEmailMock: vi.fn(),
+    signInSocialMock: vi.fn(),
   };
 });
 
@@ -15,6 +16,9 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("@/shared/auth/auth-client", () => ({
+  signIn: {
+    social: (data: unknown) => signInSocialMock(data),
+  },
   signUp: {
     email: (data: unknown) => signUpEmailMock(data),
   },
@@ -24,7 +28,9 @@ describe("SignupForm", () => {
   beforeEach(() => {
     pushMock.mockReset();
     signUpEmailMock.mockReset();
+    signInSocialMock.mockReset();
     signUpEmailMock.mockResolvedValue({ error: null });
+    signInSocialMock.mockResolvedValue({ error: null });
   });
 
   it("submits form and redirects to /app on successful sign up", async () => {
@@ -60,5 +66,20 @@ describe("SignupForm", () => {
 
     expect(await screen.findByText("Email already exists")).toBeInTheDocument();
     expect(pushMock).not.toHaveBeenCalled();
+  });
+
+  it("calls signIn.social with Google provider on Google button click", async () => {
+    const user = userEvent.setup();
+    render(<SignupForm />);
+
+    await user.click(
+      screen.getByRole("button", { name: /Войти через Google/i }),
+    );
+
+    expect(signInSocialMock).toHaveBeenCalledWith({
+      provider: "google",
+      callbackURL: "/app",
+      errorCallbackURL: "/auth/signup",
+    });
   });
 });

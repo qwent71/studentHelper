@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "bun:test";
+import { describe, it, expect, afterEach } from "bun:test";
 import { createTestApp, request } from "../testkit";
 
 const originalFetch = globalThis.fetch;

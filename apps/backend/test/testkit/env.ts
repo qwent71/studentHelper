@@ -26,4 +26,8 @@ export function applyTestEnv({
   process.env.BACKEND_PORT = backendPort;
   process.env.CENTRIFUGO_TOKEN_SECRET = "test-centrifugo-secret";
   process.env.CENTRIFUGO_URL = "http://127.0.0.1:0";
+
+  // Google OAuth — test credentials for social provider registration
+  process.env.GOOGLE_CLIENT_ID = "test-google-client-id";
+  process.env.GOOGLE_CLIENT_SECRET = "test-google-client-secret";
 }
