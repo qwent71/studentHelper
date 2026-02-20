@@ -10,6 +10,7 @@
 
 :root {
   --background: 0 0% 98%;
+  --main: 0 0% 99%;
   --foreground: 0 0% 3.9%;
   --card: 0 0% 100%;
   --card-foreground: 0 0% 3.9%;
@@ -46,43 +47,45 @@
 }
 
 .dark {
-  --background: 0 0% 7.8%;
-  --foreground: 0 0% 98%;
-  --card: 0 0% 11.5%;
-  --card-foreground: 0 0% 98%;
-  --popover: 0 0% 16%;
-  --popover-foreground: 0 0% 98%;
-  --primary: 0 0% 98%;
-  --primary-foreground: 0 0% 9%;
-  --secondary: 0 0% 14.9%;
-  --secondary-foreground: 0 0% 98%;
-  --muted: 0 0% 14.9%;
-  --muted-foreground: 0 0% 63.9%;
-  --accent: 0 0% 17.5%;
-  --accent-foreground: 0 0% 98%;
+  --background: 220 9% 8%;
+  --main: 220 8% 14%;
+  --foreground: 0 0% 94%;
+  --card: 220 8% 19%;
+  --card-foreground: 0 0% 94%;
+  --popover: 220 8% 24%;
+  --popover-foreground: 0 0% 94%;
+  --primary: 0 0% 94%;
+  --primary-foreground: 220 9% 10%;
+  --secondary: 220 7% 16%;
+  --secondary-foreground: 0 0% 94%;
+  --muted: 220 7% 16%;
+  --muted-foreground: 220 5% 68%;
+  --accent: 220 8% 28%;
+  --accent-foreground: 0 0% 94%;
   --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 0 0% 98%;
-  --border: 0 0% 20%;
-  --input: 0 0% 20%;
-  --ring: 0 0% 83.1%;
+  --destructive-foreground: 0 0% 94%;
+  --border: 220 7% 30%;
+  --input: 220 7% 30%;
+  --ring: 220 5% 78%;
   --overlay: 0 0% 0%;
   --chart-1: 220 70% 50%;
   --chart-2: 160 60% 45%;
   --chart-3: 30 80% 55%;
   --chart-4: 280 65% 60%;
   --chart-5: 340 75% 55%;
-  --sidebar: hsl(240 5.9% 10%);
-  --sidebar-foreground: hsl(240 4.8% 95.9%);
+  --sidebar: hsl(220 10% 10%);
+  --sidebar-foreground: hsl(0 0% 94%);
   --sidebar-primary: hsl(224.3 76.3% 48%);
-  --sidebar-primary-foreground: hsl(0 0% 100%);
-  --sidebar-accent: hsl(240 3.7% 15.9%);
-  --sidebar-accent-foreground: hsl(240 4.8% 95.9%);
-  --sidebar-border: hsl(240 3.7% 15.9%);
+  --sidebar-primary-foreground: hsl(0 0% 94%);
+  --sidebar-accent: hsl(220 8% 16%);
+  --sidebar-accent-foreground: hsl(0 0% 94%);
+  --sidebar-border: hsl(220 8% 18%);
   --sidebar-ring: hsl(217.2 91.2% 59.8%);
 }
 
 @theme inline {
   --color-background: hsl(var(--background));
+  --color-main: hsl(var(--main));
   --color-foreground: hsl(var(--foreground));
   --color-card: hsl(var(--card));
   --color-card-foreground: hsl(var(--card-foreground));
