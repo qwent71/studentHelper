@@ -76,3 +76,48 @@
 - Assistant response is currently a stub — replace with OpenRouter AI call in TASK-007
 - Routes use `authGuardPlugin` directly (not inherited from app.ts `authPlugin`) — other modules should follow same pattern
 - The `chat.status` field coexists with `chat.archived_at` — `archived` status sets both `status='archived'` and `archived_at` timestamp
+
+## TASK-009 — TemplatePreset CRUD API with default management (DONE)
+
+**Date**: 2026-02-20
+**Branch**: pdr
+**Commit**: 461ac13
+
+### What was done
+- **New module**: `modules/template/` with repo, services, and routes layers
+- **Repository layer** (`modules/template/repo.ts`):
+  - `create`, `getById`, `listByUserId`, `update`, `delete`
+  - `clearDefaultForUser` — clears isDefault flag on all user's presets
+- **Service layer** (`modules/template/services.ts`):
+  - Full CRUD with userId ownership validation
+  - `setDefault` — dedicated method to set exactly one template as default
+  - Automatic clearing of previous default when setting a new one (via create, update, or setDefault)
+- **Routes** (`modules/template/routes.ts`):
+  - `POST /templates` — create preset (name required, all style fields optional with defaults)
+  - `GET /templates` — list user's presets (newest first)
+  - `GET /templates/:id` — get single preset
+  - `PATCH /templates/:id` — update preset fields
+  - `DELETE /templates/:id` — delete preset
+  - `POST /templates/:id/default` — set preset as user's default
+  - All endpoints protected with `auth: true` macro
+- **Registered** in `app.ts` via `.use(templateRoutes)`
+
+### Test results (13 integration tests, all pass)
+1. **Create template**: with custom fields, with default flag
+2. **Auth guard**: rejects unauthenticated request (401)
+3. **List templates**: returns all user's presets
+4. **Get by ID**: retrieves single preset
+5. **Update template**: name and style fields
+6. **Delete template**: removes and returns 404 on subsequent get
+7. **Non-existent template**: returns 404
+8. **Default management — create**: second isDefault=true clears first
+9. **Default management — POST /:id/default**: dedicated endpoint switches default
+10. **Default management — PATCH with isDefault**: update also switches default correctly
+11. **User isolation — access**: user B cannot get/update/delete/set-default on user A's template
+12. **User isolation — list**: each user sees only their own templates
+
+### Notes for next tasks
+- TASK-009 unblocks: TASK-010 (template injection in prompt pipeline), TASK-022 (UI template management)
+- Template fields (tone, knowledgeLevel, outputFormat, outputLanguage, responseLength) are free-text — consider adding enums/validation when UI is built (TASK-022)
+- `extraPreferences` is JSONB for flexible future fields
+- Pre-existing failure in `smoke.test.ts` (`GET /chat` returns 404) — caused by TASK-006 chat route restructuring, not related to TASK-009
