@@ -106,7 +106,7 @@
         "Шаг 3: Выполнить migrations:down и убедиться в корректном rollback"
       ],
       "dependencies": ["TASK-001"],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "TASK-006",
