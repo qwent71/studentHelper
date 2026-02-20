@@ -300,3 +300,78 @@
 - `templateId` param in routes enables TASK-023's one-click template switching without API changes
 - Pre-existing failure in `smoke.test.ts` (`GET /chat` returns 404) still present — not related to this task
 - Pre-existing lint warning in `chat-pipeline.test.ts` (unused `beforeEach` import) — not related to this task
+
+## TASK-018 — Moderation/guardrail pipeline for unsafe requests/responses (DONE)
+
+**Date**: 2026-02-20
+**Branch**: pdr
+**Commits**: 50ef066, ac756be
+
+### What was done
+- **New module**: `modules/safety/` with repo, services, and index
+- **Safety service** (`modules/safety/services.ts`):
+  - `checkPromptSafety(content)` — regex pattern matching against 11 unsafe categories (self-harm, violence, weapons, drugs, sexual content, prompt injection, hate speech) in both Russian and English
+  - `checkResponseSafety(content)` — checks AI responses for dangerous instruction patterns
+  - `getBlockedMessage(reason)` — returns user-facing blocked message; special message for self-harm with helpline 8-800-2000-122
+  - `getFilteredResponseMessage()` — returns safe fallback for filtered AI responses
+  - `SAFETY_GUARDRAIL` constant — mandatory safety rules appended to every system prompt
+  - `logSafetyEvent(input)` — logs events to `safety_event` table with error resilience
+- **Safety repo** (`modules/safety/repo.ts`):
+  - `logEvent()` — inserts into `safety_event` table (userId, sessionId, eventType, severity, details)
+- **Integration into chat pipeline** (`modules/chat/services.ts`):
+  - User input checked via `checkPromptSafety()` BEFORE AI call
+  - If unsafe: user message saved (for audit), safe blocked message returned, AI NOT called, SafetyEvent logged
+  - AI response checked via `checkResponseSafety()` AFTER AI generation
+  - If unsafe response: original content replaced with safe fallback, SafetyEvent logged
+  - Both safety event logs are awaited (not fire-and-forget) for data consistency
+- **System prompt guardrails**:
+  - `SAFETY_GUARDRAIL` appended to BOTH `DEFAULT_SYSTEM_PROMPT` and template-based prompts
+  - Guardrail always appears LAST in the prompt (after template content) so it cannot be overridden
+  - Contains 6 mandatory safety rules: educational-only scope, no weapons/drugs/violence/hate/sexual content, mental health helpline referral, anti-jailbreak instruction
+- **Template safety**: Template field values go through lookup maps (whitelisted); unknown values render as plain text labels (`Тон общения: X.`), not executable instructions
+
+### Test results
+
+**safety-service.test.ts** (29 unit tests, all pass):
+1-3. Safe school questions pass (math, area calculation, history)
+4-5. Blocks violence instructions (Russian + English)
+6-7. Blocks weapons instructions (Russian + English)
+8-9. Blocks drug instructions (Russian + English)
+10-11. Blocks self-harm content (Russian + English)
+12. Blocks sexual content involving minors
+13-14. Blocks prompt injection attempts (English + Russian)
+15. Blocks identity override attempts
+16. Blocks hate speech
+17. Case-insensitive matching
+18-19. Response safety allows normal content, blocks dangerous instructions
+20-21. Response safety blocks English dangerous instructions
+22-23. `getBlockedMessage` returns self-harm helpline message vs generic message
+24. `getFilteredResponseMessage` returns safe fallback
+25-26. Default + template system prompts include safety guardrail
+27. Safety guardrail appears after template content
+28. Template with injection-like tone still has guardrail after it
+29. `SAFETY_GUARDRAIL` constant includes key rules
+
+**safety-pipeline.test.ts** (9 integration tests, all pass):
+1. Blocks unsafe prompt and returns safe response without calling AI
+2. Returns self-harm specific message with helpline number
+3. Logs SafetyEvent in database for blocked prompt (verified DB query)
+4. Blocks prompt injection attempts
+5. Allows normal school questions after a blocked prompt (session not broken)
+6. Filters unsafe AI response and returns safe fallback
+7. Logs SafetyEvent for filtered AI response
+8. Includes safety guardrail in system prompt even with custom template (injection-like values rendered as plain text, guardrail comes after)
+9. Blocks unsafe prompt even with permissive template active
+
+### Acceptance criteria verification
+1. **Dangerous requests are blocked or sanitized** — `checkPromptSafety()` catches 11 pattern categories and blocks before AI call, verified by integration tests 1, 2, 4, 5, 9
+2. **User templates cannot disable safety policy** — `SAFETY_GUARDRAIL` is always appended last to system prompt; template values go through whitelisted maps; prompt injection patterns caught by `checkPromptSafety()`; verified by integration tests 8, 9
+3. **SafetyEvent is saved with type and severity** — `safetyRepo.logEvent()` writes to DB with eventType, severity, and details JSON; verified by integration tests 3, 7
+
+### Notes for next tasks
+- TASK-018 is independent — does not directly unblock other tasks
+- Safety patterns can be extended by adding entries to `UNSAFE_PROMPT_PATTERNS` / `UNSAFE_RESPONSE_PATTERNS` arrays
+- Consider adding external moderation API (OpenAI moderation, Perspective API) for more robust detection beyond regex
+- Self-harm pattern ordering matters — must come before violence patterns to match "kill myself" before "kill"
+- Pre-existing failure in `smoke.test.ts` (`GET /chat` returns 404) still present — not related to this task
+- Pre-existing lint warning in `chat-pipeline.test.ts` (unused `beforeEach` import) — not related to this task

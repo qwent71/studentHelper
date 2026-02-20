@@ -340,7 +340,7 @@
         "Шаг 3: Проверить запись в таблице SafetyEvent"
       ],
       "dependencies": ["TASK-005", "TASK-007"],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "TASK-019",
