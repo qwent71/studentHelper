@@ -4,11 +4,20 @@ import type { ChatMessage } from "../ai";
 import { createOCRService, OCRError } from "../ocr";
 import type { OCRResult } from "../ocr";
 import { templateRepo } from "../template/repo";
+import {
+  checkPromptSafety,
+  checkResponseSafety,
+  getBlockedMessage,
+  getFilteredResponseMessage,
+  logSafetyEvent,
+  SAFETY_GUARDRAIL,
+} from "../safety";
 
 const DEFAULT_SYSTEM_PROMPT =
   "Ты — StudentHelper, помощник для школьников. " +
   "Отвечай на русском языке. Решай задачи пошагово. " +
-  "Если задача получена из изображения через OCR, учти, что текст может содержать неточности распознавания.";
+  "Если задача получена из изображения через OCR, учти, что текст может содержать неточности распознавания. " +
+  SAFETY_GUARDRAIL;
 
 type TemplatePreset = {
   tone: string;
@@ -79,6 +88,9 @@ export function buildSystemPrompt(
   parts.push(
     "Если задача получена из изображения через OCR, учти, что текст может содержать неточности распознавания.",
   );
+
+  // Safety guardrail — always last, cannot be overridden by template
+  parts.push(SAFETY_GUARDRAIL);
 
   return parts.join(" ");
 }
@@ -158,6 +170,45 @@ export const chatService = {
       }
     }
 
+    // ── Safety check on user input ──
+    const promptCheck = checkPromptSafety(finalContent);
+    if (!promptCheck.safe) {
+      console.warn(
+        `[safety] Blocked unsafe prompt: reason=${promptCheck.reason}, severity=${promptCheck.severity}, userId=${userId}`,
+      );
+
+      // Save the user message (with original content for audit)
+      const userMessage = await chatRepo.createMessage({
+        chatId: sessionId,
+        role: "user",
+        content: finalContent,
+        sourceType: imageBuffer ? "image" : sourceType,
+      });
+
+      // Return a safe response instead of calling AI
+      const blockedMessage = getBlockedMessage(promptCheck.reason!);
+      const assistantMessage = await chatRepo.createMessage({
+        chatId: sessionId,
+        role: "assistant",
+        content: blockedMessage,
+        sourceType: "text",
+      });
+
+      // Log safety event (fire-and-forget)
+      logSafetyEvent({
+        userId,
+        sessionId,
+        eventType: "blocked_prompt",
+        severity: promptCheck.severity,
+        details: JSON.stringify({
+          reason: promptCheck.reason,
+          contentPreview: finalContent.slice(0, 200),
+        }),
+      });
+
+      return { userMessage, assistantMessage };
+    }
+
     const userMessage = await chatRepo.createMessage({
       chatId: sessionId,
       role: "user",
@@ -214,6 +265,27 @@ export const chatService = {
       console.error("[chat] AI generation failed:", error);
       assistantContent =
         "Произошла ошибка при генерации ответа. Пожалуйста, попробуйте ещё раз.";
+    }
+
+    // ── Safety check on AI response ──
+    const responseCheck = checkResponseSafety(assistantContent);
+    if (!responseCheck.safe) {
+      console.warn(
+        `[safety] Filtered unsafe AI response: reason=${responseCheck.reason}, severity=${responseCheck.severity}`,
+      );
+
+      logSafetyEvent({
+        userId,
+        sessionId,
+        eventType: "unsafe_response_filtered",
+        severity: responseCheck.severity,
+        details: JSON.stringify({
+          reason: responseCheck.reason,
+          contentPreview: assistantContent.slice(0, 200),
+        }),
+      });
+
+      assistantContent = getFilteredResponseMessage();
     }
 
     const assistantMessage = await chatRepo.createMessage({
