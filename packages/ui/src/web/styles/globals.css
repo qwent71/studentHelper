@@ -115,6 +115,25 @@
   --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
 }
 
+/* Shadow toggle — add .no-shadows to <html> to disable all shadows globally */
+.no-shadows,
+.no-shadows .dark {
+  --shadow-x: 0;
+  --shadow-y: 0;
+  --shadow-blur: 0;
+  --shadow-spread: 0;
+  --shadow-opacity: 0;
+  --shadow-color: transparent;
+  --shadow-2xs: 0 0 0 0 transparent;
+  --shadow-xs: 0 0 0 0 transparent;
+  --shadow-sm: 0 0 0 0 transparent;
+  --shadow: 0 0 0 0 transparent;
+  --shadow-md: 0 0 0 0 transparent;
+  --shadow-lg: 0 0 0 0 transparent;
+  --shadow-xl: 0 0 0 0 transparent;
+  --shadow-2xl: 0 0 0 0 transparent;
+}
+
 @layer base {
   *,
   ::after,
