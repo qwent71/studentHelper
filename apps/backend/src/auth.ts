@@ -6,7 +6,7 @@ import { admin } from "better-auth/plugins/admin";
 import { env } from "@student-helper/config";
 import { db } from "./db";
 
-const isDev = env.NODE_ENV === "development";
+const isDev = env.NODE_ENV !== "production";
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, { provider: "pg" }),
@@ -14,6 +14,15 @@ export const auth = betterAuth({
   baseURL: env.BACKEND_URL,
   trustedOrigins: [env.FRONTEND_URL],
   emailAndPassword: { enabled: true },
+  socialProviders: {
+    ...(env.GOOGLE_CLIENT_ID &&
+      env.GOOGLE_CLIENT_SECRET && {
+        google: {
+          clientId: env.GOOGLE_CLIENT_ID,
+          clientSecret: env.GOOGLE_CLIENT_SECRET,
+        },
+      }),
+  },
   plugins: [
     magicLink({
       sendMagicLink: async ({ email, url }) => {
