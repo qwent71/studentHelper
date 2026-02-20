@@ -6,16 +6,15 @@ export default function Home() {
     <div className="flex min-h-svh flex-col">
       <Header />
 
-      <main className="flex flex-1 flex-col items-center justify-center gap-6 px-6 text-center">
+      <main className="flex flex-1 flex-col items-center justify-center gap-6 px-4 md:px-6 text-center">
         <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-          Your AI-powered study companion
+          Ваш ИИ-помощник для учёбы
         </h1>
         <p className="text-muted-foreground max-w-lg text-lg">
-          Get help with homework, study smarter, and ace your exams — all in one
-          place.
+          Помощь с домашними заданиями, умная подготовка к экзаменам — всё в одном месте.
         </p>
         <Button size="lg" className="mt-2">
-          Get started
+          Начать
         </Button>
       </main>
     </div>

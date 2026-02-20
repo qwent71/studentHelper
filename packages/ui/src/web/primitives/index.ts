@@ -13,6 +13,15 @@ export {
   AlertDialogTrigger,
 } from "./alert-dialog.js";
 export { Button, buttonVariants } from "./button.js";
+export {
+  Card,
+  CardHeader,
+  CardFooter,
+  CardTitle,
+  CardAction,
+  CardDescription,
+  CardContent,
+} from "./card.js";
 export { Input } from "./input.js";
 export {
   Dialog,

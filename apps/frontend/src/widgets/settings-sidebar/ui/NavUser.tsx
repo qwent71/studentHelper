@@ -44,8 +44,9 @@ import type { User } from "@/entities/user";
 import { signOut } from "@/shared/auth/auth-client";
 import { useSettingsDialog } from "@/shared/settings";
 
-const menuItemClass = "gap-3 px-3 py-1.5 text-[13px]";
-const menuIconClass = "size-[18px] text-muted-foreground";
+const menuItemClass =
+  "gap-2 px-2 py-1.5 text-sm";
+const menuIconClass = "size-4 text-muted-foreground";
 
 interface NavUserProps {
   user: User;
@@ -130,14 +131,14 @@ export function NavUser({ user }: NavUserProps) {
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            className="w-[calc(var(--radix-dropdown-menu-trigger-width)+8px)] min-w-56 rounded-xl p-1.5"
+            className="w-[calc(var(--radix-dropdown-menu-trigger-width)+8px)] min-w-56 rounded-md p-1"
             side="top"
             align="start"
             alignOffset={-4}
             sideOffset={8}
           >
             <DropdownMenuLabel className="p-0 font-normal">
-              <div className="flex items-center gap-3 px-3 py-2 text-left text-sm">
+              <div className="flex items-center gap-2 px-2 py-1.5 text-left text-sm">
                 <Avatar className="size-9 rounded-lg">
                   {user.image && (
                     <AvatarImage src={user.image} alt={user.name} />
@@ -156,24 +157,24 @@ export function NavUser({ user }: NavUserProps) {
                 </div>
               </div>
             </DropdownMenuLabel>
-            <DropdownMenuSeparator className="mx-3" />
+            <DropdownMenuSeparator className="m-2" />
             <DropdownMenuGroup>
               <DropdownMenuItem
                 className={menuItemClass}
                 onSelect={() => openToCategory("appearance")}
               >
                 <Paintbrush className={menuIconClass} />
-                Personalization
+                Персонализация
               </DropdownMenuItem>
               <DropdownMenuItem
                 className={menuItemClass}
                 onSelect={() => setOpen(true)}
               >
                 <Settings className={menuIconClass} />
-                Settings
+                Настройки
               </DropdownMenuItem>
             </DropdownMenuGroup>
-            <DropdownMenuSeparator className="mx-3" />
+            <DropdownMenuSeparator className="m-2" />
             <DropdownMenuGroup>
               <DropdownMenuItem
                 className={menuItemClass}
@@ -182,14 +183,14 @@ export function NavUser({ user }: NavUserProps) {
                 }
               >
                 <HelpCircle className={menuIconClass} />
-                Help
+                Помощь
               </DropdownMenuItem>
               <DropdownMenuItem
                 className={menuItemClass}
                 onSelect={() => setShowLogoutConfirm(true)}
               >
                 <LogOut className={menuIconClass} />
-                Log out
+                Выйти
               </DropdownMenuItem>
             </DropdownMenuGroup>
           </DropdownMenuContent>
@@ -198,14 +199,14 @@ export function NavUser({ user }: NavUserProps) {
         <AlertDialog open={showLogoutConfirm} onOpenChange={setShowLogoutConfirm}>
           <AlertDialogContent size="sm">
             <AlertDialogHeader>
-              <AlertDialogTitle>Log out?</AlertDialogTitle>
+              <AlertDialogTitle>Выйти?</AlertDialogTitle>
               <AlertDialogDescription>
-                Are you sure you want to log out of your account?
+                Вы уверены, что хотите выйти из аккаунта?
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel disabled={isSigningOut}>
-                Cancel
+                Отмена
               </AlertDialogCancel>
               <AlertDialogAction
                 variant="destructive"
@@ -215,7 +216,7 @@ export function NavUser({ user }: NavUserProps) {
                   void handleSignOut();
                 }}
               >
-                {isSigningOut ? "Logging out..." : "Log out"}
+                {isSigningOut ? "Выход..." : "Выйти"}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

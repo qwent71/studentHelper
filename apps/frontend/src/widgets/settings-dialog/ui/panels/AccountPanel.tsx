@@ -1,16 +1,19 @@
 "use client";
 
+import { User } from "lucide-react";
+import { SettingsPanelEmptyState } from "./SettingsPanelEmptyState";
+
 export function AccountPanel() {
   return (
     <div className="space-y-5 md:space-y-4">
       <p className="text-muted-foreground text-base md:text-sm">
-        Manage your account settings and profile information.
+        Управление настройками аккаунта и профиля.
       </p>
-      <div className="bg-muted/50 rounded-2xl p-5 md:rounded-lg md:border md:p-4">
-        <p className="text-muted-foreground text-base md:text-sm">
-          Account settings coming soon.
-        </p>
-      </div>
+      <SettingsPanelEmptyState
+        icon={User}
+        title="Настройки аккаунта временно недоступны"
+        description="Откройте помощь, чтобы посмотреть доступные инструкции."
+      />
     </div>
   );
 }

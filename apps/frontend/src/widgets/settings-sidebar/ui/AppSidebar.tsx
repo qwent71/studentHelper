@@ -9,7 +9,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarRail,
 } from "@student-helper/ui/web/primitives/sidebar";
 import type { User } from "@/entities/user";
 import { mainNavItems } from "../model/navigation";
@@ -22,7 +21,7 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
 
 export function AppSidebar({ user, ...props }: AppSidebarProps) {
   return (
-    <Sidebar collapsible="icon" {...props}>
+    <Sidebar variant="inset" collapsible="icon" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -34,7 +33,7 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">Student Helper</span>
                   <span className="text-muted-foreground truncate text-xs">
-                    Learning Platform
+                    Платформа обучения
                   </span>
                 </div>
               </a>
@@ -48,7 +47,6 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
       <SidebarFooter>
         <NavUser user={user} />
       </SidebarFooter>
-      <SidebarRail />
     </Sidebar>
   );
 }

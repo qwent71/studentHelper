@@ -1,16 +1,19 @@
 "use client";
 
+import { Globe } from "lucide-react";
+import { SettingsPanelEmptyState } from "./SettingsPanelEmptyState";
+
 export function LanguagePanel() {
   return (
     <div className="space-y-5 md:space-y-4">
       <p className="text-muted-foreground text-base md:text-sm">
-        Set your preferred language and regional preferences.
+        Настройте язык и региональные параметры.
       </p>
-      <div className="bg-muted/50 rounded-2xl p-5 md:rounded-lg md:border md:p-4">
-        <p className="text-muted-foreground text-base md:text-sm">
-          Language settings coming soon.
-        </p>
-      </div>
+      <SettingsPanelEmptyState
+        icon={Globe}
+        title="Настройки языка и региона временно недоступны"
+        description="Откройте помощь, чтобы проверить доступные параметры."
+      />
     </div>
   );
 }

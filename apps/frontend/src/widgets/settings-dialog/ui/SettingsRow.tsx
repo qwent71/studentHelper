@@ -1,4 +1,11 @@
 import type { ReactNode } from "react";
+import {
+  Card,
+  CardAction,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@student-helper/ui/web/primitives/card";
 
 interface SettingsRowProps {
   title: string;
@@ -8,14 +15,16 @@ interface SettingsRowProps {
 
 export function SettingsRow({ title, description, children }: SettingsRowProps) {
   return (
-    <div className="bg-muted/50 flex items-center justify-between gap-4 rounded-2xl p-4 md:rounded-lg md:border md:bg-transparent md:p-4">
-      <div className="min-w-0 flex-1">
-        <p className="text-base font-medium md:text-sm">{title}</p>
-        <p className="text-muted-foreground text-sm md:text-xs">
+    <Card className="gap-0 rounded-2xl border-0 bg-muted/50 py-0 shadow-none md:rounded-lg md:border md:bg-card md:shadow-sm">
+      <CardHeader className="p-4">
+        <CardTitle className="text-base font-medium md:text-sm">
+          {title}
+        </CardTitle>
+        <CardDescription className="text-sm md:text-xs">
           {description}
-        </p>
-      </div>
-      {children}
-    </div>
+        </CardDescription>
+        <CardAction className="self-center">{children}</CardAction>
+      </CardHeader>
+    </Card>
   );
 }

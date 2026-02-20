@@ -25,11 +25,11 @@ test.describe("App sidebar @regression", () => {
     // Check nav items
     const desktopSidebar = sidebar.first();
     await expect(
-      desktopSidebar.locator("a[href='/app']", { hasText: "Dashboard" }),
+      desktopSidebar.locator("a[href='/app']", { hasText: "Главная" }),
     ).toBeVisible();
     await expect(desktopSidebar.locator("a[href='/app/chat']")).toBeVisible();
     await expect(
-      desktopSidebar.locator("a[href='/app/settings']", { hasText: "Settings" }),
+      desktopSidebar.locator("a[href='/app/settings']", { hasText: "Настройки" }),
     ).toBeVisible();
   });
 

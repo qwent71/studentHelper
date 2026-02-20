@@ -33,7 +33,7 @@ describe("SignupForm", () => {
     render(<SignupForm />);
 
     await user.type(screen.getByLabelText("Имя"), "Alice");
-    await user.type(screen.getByLabelText("Email"), "alice@example.com");
+    await user.type(screen.getByLabelText("Эл. почта"), "alice@example.com");
     await user.type(screen.getByLabelText("Пароль"), "securePassword123");
     await user.click(screen.getByRole("button", { name: "Зарегистрироваться" }));
 
@@ -54,7 +54,7 @@ describe("SignupForm", () => {
     render(<SignupForm />);
 
     await user.type(screen.getByLabelText("Имя"), "Alice");
-    await user.type(screen.getByLabelText("Email"), "alice@example.com");
+    await user.type(screen.getByLabelText("Эл. почта"), "alice@example.com");
     await user.type(screen.getByLabelText("Пароль"), "securePassword123");
     await user.click(screen.getByRole("button", { name: "Зарегистрироваться" }));
 

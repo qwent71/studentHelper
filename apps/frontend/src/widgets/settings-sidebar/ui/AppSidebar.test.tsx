@@ -86,6 +86,46 @@ vi.mock("@student-helper/ui/web/primitives/dropdown-menu", () => ({
   DropdownMenuTrigger: ({ children }: React.PropsWithChildren) => <div>{children}</div>,
 }));
 
+// Mock alert-dialog
+vi.mock("@student-helper/ui/web/primitives/alert-dialog", () => ({
+  AlertDialog: ({
+    children,
+    open,
+  }: React.PropsWithChildren<{ open: boolean }>) =>
+    open ? <div data-testid="alert-dialog">{children}</div> : null,
+  AlertDialogAction: ({
+    children,
+    onClick,
+  }: React.PropsWithChildren<{ onClick?: React.MouseEventHandler }>) => (
+    <button type="button" data-testid="confirm-logout" onClick={onClick}>
+      {children}
+    </button>
+  ),
+  AlertDialogCancel: ({
+    children,
+    ...props
+  }: React.PropsWithChildren<{ disabled?: boolean }>) => (
+    <button type="button" data-testid="cancel-logout" {...props}>
+      {children}
+    </button>
+  ),
+  AlertDialogContent: ({ children }: React.PropsWithChildren) => (
+    <div>{children}</div>
+  ),
+  AlertDialogDescription: ({ children }: React.PropsWithChildren) => (
+    <p>{children}</p>
+  ),
+  AlertDialogFooter: ({ children }: React.PropsWithChildren) => (
+    <div>{children}</div>
+  ),
+  AlertDialogHeader: ({ children }: React.PropsWithChildren) => (
+    <div>{children}</div>
+  ),
+  AlertDialogTitle: ({ children }: React.PropsWithChildren) => (
+    <h2>{children}</h2>
+  ),
+}));
+
 vi.mock("@/shared/auth/auth-client", () => ({
   signOut: signOutMock,
 }));
@@ -112,7 +152,10 @@ describe("AppSidebar", () => {
   it("signs out and redirects to login", async () => {
     render(<AppSidebar user={testUser} />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Log out" }));
+    // Click "Выйти" to open confirmation dialog
+    fireEvent.click(screen.getByRole("button", { name: "Выйти" }));
+    // Confirm sign out
+    fireEvent.click(screen.getByTestId("confirm-logout"));
 
     await waitFor(() => {
       expect(signOutMock).toHaveBeenCalledTimes(1);
@@ -128,12 +171,12 @@ describe("AppSidebar", () => {
 
   it("renders all navigation items", () => {
     render(<AppSidebar user={testUser} />);
-    expect(screen.getByText("Dashboard")).toBeInTheDocument();
-    expect(screen.getByText("Chat")).toBeInTheDocument();
-    expect(screen.getByText("Textbooks")).toBeInTheDocument();
-    expect(screen.getByText("AI Tutor")).toBeInTheDocument();
-    expect(screen.getByText("Uploads")).toBeInTheDocument();
-    expect(screen.getAllByText("Settings").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText("Главная")).toBeInTheDocument();
+    expect(screen.getByText("Чат")).toBeInTheDocument();
+    expect(screen.getByText("Учебники")).toBeInTheDocument();
+    expect(screen.getByText("ИИ-репетитор")).toBeInTheDocument();
+    expect(screen.getByText("Загрузки")).toBeInTheDocument();
+    expect(screen.getAllByText("Настройки").length).toBeGreaterThanOrEqual(1);
   });
 
   it("renders user info in the footer", () => {

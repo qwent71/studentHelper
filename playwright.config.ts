@@ -48,7 +48,18 @@ export default defineConfig({
     video: "retain-on-failure",
     trace: "retain-on-failure",
   },
-  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
+  projects: [
+    {
+      name: "chromium",
+      use: { ...devices["Desktop Chrome"] },
+      grepInvert: /@mobile/i,
+    },
+    {
+      name: "mobile",
+      use: { ...devices["Pixel 5"] },
+      grep: /@mobile/i,
+    },
+  ],
   webServer: [
     {
       command: "bun run --cwd apps/backend dev",

@@ -1,16 +1,19 @@
 "use client";
 
+import { Shield } from "lucide-react";
+import { SettingsPanelEmptyState } from "./SettingsPanelEmptyState";
+
 export function PrivacyPanel() {
   return (
     <div className="space-y-5 md:space-y-4">
       <p className="text-muted-foreground text-base md:text-sm">
-        Manage your privacy and data settings.
+        Управление настройками конфиденциальности и данных.
       </p>
-      <div className="bg-muted/50 rounded-2xl p-5 md:rounded-lg md:border md:p-4">
-        <p className="text-muted-foreground text-base md:text-sm">
-          Privacy settings coming soon.
-        </p>
-      </div>
+      <SettingsPanelEmptyState
+        icon={Shield}
+        title="Настройки конфиденциальности временно недоступны"
+        description="Откройте помощь, чтобы узнать, как управлять данными."
+      />
     </div>
   );
 }
