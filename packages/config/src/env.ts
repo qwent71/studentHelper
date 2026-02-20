@@ -67,25 +67,92 @@ function preloadEnvFiles(): void {
 preloadEnvFiles();
 
 const envSchema = z.object({
+  // ── Core ──────────────────────────────────────────────
   NODE_ENV: z
     .enum(["development", "production", "test"])
     .default("development"),
   FRONTEND_PORT: z.coerce.number().default(3000),
   BACKEND_PORT: z.coerce.number().default(3001),
   BACKEND_URL: z.string().default("http://localhost:3001"),
-  DATABASE_URL: z.string(),
-  BETTER_AUTH_SECRET: z.string(),
   FRONTEND_URL: z.string().default("http://localhost:3000"),
+
+  // ── Database ──────────────────────────────────────────
+  DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
+
+  // ── Auth ──────────────────────────────────────────────
+  BETTER_AUTH_SECRET: z.string().min(1, "BETTER_AUTH_SECRET is required"),
+  GOOGLE_CLIENT_ID: z.string().optional(),
+  GOOGLE_CLIENT_SECRET: z.string().optional(),
+
+  // ── Redis ─────────────────────────────────────────────
   REDIS_URL: z.string().default("redis://localhost:6379"),
+
+  // ── Centrifugo ────────────────────────────────────────
   CENTRIFUGO_TOKEN_SECRET: z.string().default("centrifugo-dev-secret"),
   CENTRIFUGO_URL: z.string().default("http://localhost:8800"),
+
+  // ── AI — OpenRouter (primary model gateway) ───────────
+  OPENROUTER_API_KEY: z.string().min(1, "OPENROUTER_API_KEY is required"),
+  OPENROUTER_BASE_URL: z
+    .string()
+    .url()
+    .default("https://openrouter.ai/api/v1"),
+  OPENROUTER_DEFAULT_MODEL: z
+    .string()
+    .default("google/gemini-2.0-flash-001"),
+
+  // ── AI — OpenAI (optional, fallback) ──────────────────
   OPENAI_API_KEY: z.string().optional(),
+
+  // ── OCR ───────────────────────────────────────────────
+  OCR_PROVIDER: z
+    .enum(["google-vision", "tesseract", "none"])
+    .default("google-vision"),
+  OCR_FALLBACK_PROVIDER: z
+    .enum(["google-vision", "tesseract", "none"])
+    .default("none"),
+  OCR_CONFIDENCE_THRESHOLD: z.coerce.number().min(0).max(1).default(0.7),
+  GOOGLE_VISION_API_KEY: z.string().optional(),
+
+  // ── Sentry (observability) ────────────────────────────
+  SENTRY_DSN: z.string().url().optional(),
+  NEXT_PUBLIC_SENTRY_DSN: z.string().url().optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;
 
 export function parseEnv(overrides?: Record<string, unknown>): Env {
-  return envSchema.parse({ ...process.env, ...overrides });
+  const result = envSchema.safeParse({ ...process.env, ...overrides });
+
+  if (!result.success) {
+    const missing: string[] = [];
+    const invalid: string[] = [];
+
+    for (const issue of result.error.issues) {
+      const key = issue.path.join(".");
+      if (
+        issue.code === "invalid_type" &&
+        (issue.received === "undefined" || issue.received === "null")
+      ) {
+        missing.push(key);
+      } else {
+        invalid.push(`  ${key}: ${issue.message}`);
+      }
+    }
+
+    const lines = ["\n[env] Environment validation failed:\n"];
+    if (missing.length > 0) {
+      lines.push(`  Missing required variables:\n    ${missing.join("\n    ")}`);
+    }
+    if (invalid.length > 0) {
+      lines.push(`  Invalid variables:\n${invalid.join("\n")}`);
+    }
+    lines.push("\n  Check your .env file or see .env.example for reference.\n");
+
+    throw new Error(lines.join("\n"));
+  }
+
+  return result.data;
 }
 
 let _env: Env | undefined;
