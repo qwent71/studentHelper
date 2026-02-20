@@ -176,3 +176,63 @@
 - Google Vision adapter is implemented but untested against real API (needs `GOOGLE_VISION_API_KEY`)
 - Tesseract works fully offline, tested with real image buffers
 - Env vars already defined: `OCR_PROVIDER` (default: google-vision), `OCR_FALLBACK_PROVIDER` (default: none), `OCR_CONFIDENCE_THRESHOLD` (default: 0.7)
+
+## TASK-007 — E2E pipeline: upload → OCR → OpenRouter → chat response (DONE)
+
+**Date**: 2026-02-20
+**Branch**: pdr
+**Commits**: 1897ebf, 1f2a878
+
+### What was done
+- **New module**: `modules/ai/` — OpenRouter API integration
+  - `AIService` class wrapping OpenRouter's OpenAI-compatible chat completions API
+  - Configurable via env: `OPENROUTER_API_KEY`, `OPENROUTER_BASE_URL`, `OPENROUTER_DEFAULT_MODEL`
+  - Constructor accepts custom options for testing (baseUrl, apiKey, model)
+  - `AIServiceError` error class with statusCode and responseBody
+  - `getAIService()` singleton factory
+- **Updated `modules/chat/services.ts`** — replaced stub with real AI pipeline:
+  - `sendMessage()` now accepts optional `imageBuffer` parameter
+  - If image provided: runs OCR via `createOCRService()`, extracts text, combines with user content
+  - Builds full conversation context: system prompt + message history + current message
+  - Calls `AIService.complete()` for AI generation via OpenRouter
+  - Graceful error handling: OCR failure falls back to manual text, AI failure returns error message
+  - System prompt configured for Russian-language student helper
+- **New endpoint**: `POST /chat/sessions/:id/messages/image`
+  - Accepts multipart form data with `image` (required, png/jpeg/webp/bmp, max 10MB) and `content` (optional text)
+  - Runs full pipeline: image → OCR → AI → save to chat
+  - Protected with `auth: true` macro
+- **Existing endpoint** `POST /chat/sessions/:id/messages` now calls real AI instead of stub
+
+### Test results (15 new tests, all pass)
+
+**ai-service.test.ts** (7 unit tests):
+1. Returns completion result on success (with usage data)
+2. Sends correct request to OpenRouter API (URL, headers, body)
+3. Uses custom model when provided
+4. Throws AIServiceError on non-OK response (401)
+5. Throws AIServiceError on empty response (no choices)
+6. Handles response without usage data
+7. Throws on network error
+
+**chat-pipeline.test.ts** (8 integration tests):
+8. Generates AI response for text message
+9. Uses chat history as context for AI generation (verifies request body)
+10. Saves AI response in message history
+11. Handles AI generation failure gracefully (returns error fallback)
+12. Accepts image upload and returns AI response
+13. Saves image message in history with sourceType "image"
+14. Rejects upload without image file (422)
+15. Rejects unauthenticated image upload (401)
+
+### Acceptance criteria verification
+1. **Screenshot uploads and passes OCR** — `POST /chat/sessions/:id/messages/image` accepts image files, passes through `createOCRService().extractText()`, combines OCR text with user content
+2. **OCR text passed to AI via OpenRouter** — `AIService.complete()` receives messages array including OCR-extracted text, calls OpenRouter API
+3. **User receives full response in one chat turn** — single HTTP response returns both `userMessage` and `assistantMessage`
+
+### Notes for next tasks
+- TASK-007 unblocks: TASK-008 (low OCR confidence handling), TASK-010 (template injection), TASK-018 (safety pipeline), TASK-020 (first-use UI), TASK-027 (streaming), TASK-028 (token limits)
+- No new npm dependencies added — AI service uses native `fetch` (OpenRouter is OpenAI-compatible)
+- `createOCRService()` is called per-request — consider caching for performance if needed
+- System prompt is hardcoded in `services.ts` — TASK-010 will inject template-based prompts
+- Streaming (TASK-027) will require switching from `complete()` to a stream-based API
+- Pre-existing failure in `smoke.test.ts` (`GET /chat` returns 404) still present — not related to this task
