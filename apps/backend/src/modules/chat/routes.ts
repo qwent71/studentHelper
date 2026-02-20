@@ -72,7 +72,7 @@ export const chatRoutes = new Elysia({ prefix: "/chat" })
       }),
     },
   )
-  // ── Send message ──
+  // ── Send message (text only, JSON body) ──
   .post(
     "/sessions/:id/messages",
     async ({ params, body, user, status }) => {
@@ -98,6 +98,36 @@ export const chatRoutes = new Elysia({ prefix: "/chat" })
             t.Literal("rag"),
           ]),
         ),
+      }),
+    },
+  )
+  // ── Send message with image (multipart form) ──
+  .post(
+    "/sessions/:id/messages/image",
+    async ({ params, body, user, status }) => {
+      const imageFile = body.image;
+      const imageBuffer = Buffer.from(await imageFile.arrayBuffer());
+
+      const result = await chatService.sendMessage(
+        params.id,
+        user.id,
+        body.content ?? "",
+        "image",
+        imageBuffer,
+      );
+      if (!result)
+        return status(404, { error: "Session not found or not active" });
+      return result;
+    },
+    {
+      auth: true,
+      params: t.Object({ id: t.String() }),
+      body: t.Object({
+        image: t.File({
+          type: ["image/png", "image/jpeg", "image/webp", "image/bmp"],
+          maxSize: "10m",
+        }),
+        content: t.Optional(t.String()),
       }),
     },
   )
