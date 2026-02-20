@@ -10,6 +10,7 @@ import { familyRoutes } from "./modules/family/routes";
 import { ragRoutes } from "./modules/rag/routes";
 import { adminRoutes } from "./modules/admin/routes";
 import { centrifugoRoutes } from "./modules/centrifugo/routes";
+import { templateRoutes } from "./modules/template/routes";
 
 export function createApp() {
   return new Elysia()
@@ -33,7 +34,8 @@ export function createApp() {
     .use(familyRoutes)
     .use(ragRoutes)
     .use(adminRoutes)
-    .use(centrifugoRoutes);
+    .use(centrifugoRoutes)
+    .use(templateRoutes);
 }
 
 export type App = ReturnType<typeof createApp>;
