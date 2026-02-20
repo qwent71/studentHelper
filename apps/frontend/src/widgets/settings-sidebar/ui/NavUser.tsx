@@ -45,7 +45,7 @@ import { signOut } from "@/shared/auth/auth-client";
 import { useSettingsDialog } from "@/shared/settings";
 
 const menuItemClass =
-  "gap-2 px-2 py-1.5 text-sm data-[highlighted]:bg-sidebar-accent data-[highlighted]:text-sidebar-accent-foreground";
+  "gap-2 px-2 py-1.5 text-sm";
 const menuIconClass = "size-4 text-muted-foreground";
 
 interface NavUserProps {
@@ -131,7 +131,7 @@ export function NavUser({ user }: NavUserProps) {
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            className="bg-sidebar text-sidebar-foreground border-sidebar-border w-[calc(var(--radix-dropdown-menu-trigger-width)+8px)] min-w-56 rounded-md p-1"
+            className="w-[calc(var(--radix-dropdown-menu-trigger-width)+8px)] min-w-56 rounded-md p-1"
             side="top"
             align="start"
             alignOffset={-4}

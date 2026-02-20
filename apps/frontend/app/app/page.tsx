@@ -72,6 +72,11 @@ export default function AppPage() {
           ))}
         </div>
       </div>
+
+      <Button variant="outline">
+        <Plus className="size-4" />
+        Новый чат
+      </Button>
     </div>
   );
 }
