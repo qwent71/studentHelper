@@ -140,6 +140,20 @@ export const messageRoleEnum = pgEnum("message_role", [
   "system",
 ]);
 
+export const chatModeEnum = pgEnum("chat_mode", ["fast", "learning"]);
+
+export const chatStatusEnum = pgEnum("chat_status", [
+  "active",
+  "completed",
+  "archived",
+]);
+
+export const messageSourceTypeEnum = pgEnum("message_source_type", [
+  "text",
+  "image",
+  "rag",
+]);
+
 export const chat = pgTable(
   "chat",
   {
@@ -148,8 +162,11 @@ export const chat = pgTable(
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
     title: text("title").notNull(),
+    mode: chatModeEnum("mode").notNull().default("fast"),
+    status: chatStatusEnum("status").notNull().default("active"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    endedAt: timestamp("ended_at", { withTimezone: true }),
     archivedAt: timestamp("archived_at", { withTimezone: true }),
   },
   (t) => [index("chat_user_id_idx").on(t.userId)],
@@ -164,6 +181,7 @@ export const message = pgTable(
       .references(() => chat.id, { onDelete: "cascade" }),
     role: messageRoleEnum("role").notNull(),
     content: text("content").notNull(),
+    sourceType: messageSourceTypeEnum("source_type").notNull().default("text"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [index("message_chat_id_idx").on(t.chatId)],
