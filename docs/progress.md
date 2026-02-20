@@ -236,3 +236,67 @@
 - System prompt is hardcoded in `services.ts` — TASK-010 will inject template-based prompts
 - Streaming (TASK-027) will require switching from `complete()` to a stream-based API
 - Pre-existing failure in `smoke.test.ts` (`GET /chat` returns 404) still present — not related to this task
+
+## TASK-010 — Template injection into prompt pipeline for fast/learning modes (DONE)
+
+**Date**: 2026-02-20
+**Branch**: pdr
+**Commits**: c0a879e, d384577
+
+### What was done
+- **`buildSystemPrompt()` function** (`modules/chat/services.ts`):
+  - Exported pure function that builds a system prompt from template fields and chat mode
+  - Maps known values for tone (friendly/formal/casual/encouraging), knowledgeLevel (basic/intermediate/advanced), outputFormat (full/concise/step-by-step), responseLength (short/medium/long) to Russian-language instructions
+  - Falls back to raw value for unknown/custom field values (e.g., `Тон общения: sarcastic.`)
+  - Handles outputLanguage: Russian by default, custom language instruction when non-Russian
+  - Mode-specific instructions: "fast" → quick answer, "learning" → help student understand
+  - Always includes OCR caveat and StudentHelper identity
+  - Returns `DEFAULT_SYSTEM_PROMPT` when no template is provided (safe fallback)
+- **Template resolution in `sendMessage()`**:
+  - New optional `templateId` parameter for explicit template selection
+  - Resolution order: explicit templateId → user's default template → no template (safe fallback)
+  - User ownership validation: ignores templateId belonging to another user
+  - Error-resilient: catches template resolution errors and falls back gracefully
+- **New `getDefaultForUser()` method** in `template/repo.ts`:
+  - Queries for the user's template with `isDefault: true`
+- **Routes updated**: Both `POST /sessions/:id/messages` and `POST /sessions/:id/messages/image` accept optional `templateId` in request body
+
+### Test results
+
+**build-system-prompt.test.ts** (15 unit tests, all pass):
+1. Returns default prompt when no template provided
+2. Returns default prompt when template is null
+3. Includes friendly tone instruction
+4. Includes formal tone instruction
+5. Falls back to raw tone value for unknown tones
+6. Includes knowledge level instructions (advanced)
+7. Includes output format instructions (concise)
+8. Includes step-by-step format instructions
+9. Includes response length instructions (short)
+10. Includes Russian language by default
+11. Includes custom language when not Russian
+12. Includes fast mode instruction
+13. Includes learning mode instruction
+14. Always includes OCR caveat when template is provided
+15. Always includes StudentHelper identity
+
+**template-injection.test.ts** (7 integration tests, all pass):
+1. Uses default system prompt when user has no templates
+2. Injects default template into system prompt automatically
+3. Uses learning mode instruction when session is learning mode
+4. Allows explicit templateId to override default template
+5. Ignores templateId that belongs to another user
+6. Uses safe fallback when no template and no default exists
+7. Switches to new default template when default is changed between messages
+
+### Acceptance criteria verification
+1. **Active template affects tone, format, length, and language** — `buildSystemPrompt()` maps all template fields to specific Russian-language instructions in the system prompt, verified by integration tests capturing OpenRouter request body
+2. **Default template is automatically applied in new chats** — `sendMessage()` fetches user's default template via `templateRepo.getDefaultForUser()` and injects it, verified by test 2
+3. **Without template, safe system profile is used** — Returns `DEFAULT_SYSTEM_PROMPT` (the original hardcoded prompt), verified by tests 1 and 6
+
+### Notes for next tasks
+- TASK-010 unblocks: TASK-011 (step-by-step explanation endpoint), TASK-023 (active template in chat UI)
+- `buildSystemPrompt` is exported and testable in isolation — can be reused by TASK-011 for explanation-specific prompts
+- `templateId` param in routes enables TASK-023's one-click template switching without API changes
+- Pre-existing failure in `smoke.test.ts` (`GET /chat` returns 404) still present — not related to this task
+- Pre-existing lint warning in `chat-pipeline.test.ts` (unused `beforeEach` import) — not related to this task
