@@ -78,7 +78,7 @@ export default async function AppLayout({
               </Breadcrumb>
             </div>
           </header>
-          <main className="flex-1 p-4">{children}</main>
+          <main className="flex-1 pt-0 p-4">{children}</main>
         </SidebarInset>
       </SidebarProvider>
       <SettingsDialog />

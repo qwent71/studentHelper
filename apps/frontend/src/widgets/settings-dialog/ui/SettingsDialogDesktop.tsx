@@ -76,7 +76,7 @@ export function SettingsDialogDesktop() {
                 {activeCategory?.label ?? "Настройки"}
               </h2>
             </header>
-            <div className="flex-1 overflow-y-auto p-4">
+            <div className="flex-1 overflow-y-auto pt-0 p-4">
               <SettingsContent />
             </div>
           </main>
