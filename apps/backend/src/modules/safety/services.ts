@@ -18,6 +18,17 @@ interface UnsafePattern {
  * Each pattern is checked case-insensitively against the user's input.
  */
 const UNSAFE_PROMPT_PATTERNS: UnsafePattern[] = [
+  // Self-harm / suicide — must come BEFORE violence to match "kill myself" before "kill"
+  {
+    pattern: /как\s+(покончить\s+с\s+собой|убить\s+себя|совершить\s+суицид|повеситься|отравиться|порезать\s+вены)/i,
+    severity: "high",
+    reason: "self_harm",
+  },
+  {
+    pattern: /how\s+to\s+(kill\s+myself|commit\s+suicide|end\s+my\s+life|hurt\s+myself)/i,
+    severity: "high",
+    reason: "self_harm",
+  },
   // Violence / harm to others
   {
     pattern: /как\s+(убить|отравить|ударить|ранить|навредить|избить|задушить|зарезать)/i,
@@ -50,17 +61,6 @@ const UNSAFE_PROMPT_PATTERNS: UnsafePattern[] = [
     pattern: /how\s+to\s+(make|synthesize|cook|buy|get)\s+(meth|heroin|cocaine|drugs|amphetamine|ecstasy|mdma|lsd)/i,
     severity: "high",
     reason: "drug_instructions",
-  },
-  // Self-harm / suicide
-  {
-    pattern: /как\s+(покончить\s+с\s+собой|убить\s+себя|совершить\s+суицид|повеситься|отравиться|порезать\s+вены)/i,
-    severity: "high",
-    reason: "self_harm",
-  },
-  {
-    pattern: /how\s+to\s+(kill\s+myself|commit\s+suicide|end\s+my\s+life|hurt\s+myself)/i,
-    severity: "high",
-    reason: "self_harm",
   },
   // Sexual content (inappropriate for school-age children)
   {

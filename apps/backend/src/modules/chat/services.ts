@@ -194,8 +194,8 @@ export const chatService = {
         sourceType: "text",
       });
 
-      // Log safety event (fire-and-forget)
-      logSafetyEvent({
+      // Log safety event
+      await logSafetyEvent({
         userId,
         sessionId,
         eventType: "blocked_prompt",
@@ -274,7 +274,7 @@ export const chatService = {
         `[safety] Filtered unsafe AI response: reason=${responseCheck.reason}, severity=${responseCheck.severity}`,
       );
 
-      logSafetyEvent({
+      await logSafetyEvent({
         userId,
         sessionId,
         eventType: "unsafe_response_filtered",
