@@ -227,6 +227,12 @@ describe("NavUser", () => {
       expect(screen.getByText("Выйти?")).toBeInTheDocument();
     });
 
+    it("Log out menu item uses neutral style variant", () => {
+      render(<NavUser user={testUser} />);
+      const logoutButton = screen.getByRole("button", { name: "Выйти" });
+      expect(logoutButton).not.toHaveAttribute("variant", "destructive");
+    });
+
     it("Cancel in AlertDialog does not call signOut", () => {
       render(<NavUser user={testUser} />);
       fireEvent.click(screen.getByText("Выйти"));

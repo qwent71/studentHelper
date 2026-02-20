@@ -182,6 +182,13 @@ describe("SettingsDialogMobile", () => {
       expect(screen.getByText("Выйти")).toBeInTheDocument();
     });
 
+    it("shows neutral styling for logout action item", () => {
+      render(<SettingsDialogMobile />);
+      const logoutButton = screen.getByRole("button", { name: "Выйти" });
+      expect(logoutButton).toHaveClass("text-foreground");
+      expect(logoutButton).not.toHaveClass("text-destructive");
+    });
+
     it("does NOT show Back button", () => {
       render(<SettingsDialogMobile />);
       expect(screen.queryByText("Назад")).not.toBeInTheDocument();

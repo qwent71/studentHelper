@@ -39,7 +39,7 @@ function CategoryList() {
 
   return (
     <div className="px-4 pb-4">
-      <div className="bg-muted/50 overflow-hidden rounded-2xl">
+      <div className="bg-card border-border/50 overflow-hidden rounded-2xl border">
         {settingsCategories.map((category, index) => (
           <button
             key={category.id}
@@ -83,7 +83,7 @@ function MobileActionItems() {
   return (
     <>
       <div className="px-4 pb-4">
-        <div className="bg-muted/50 overflow-hidden rounded-2xl">
+        <div className="bg-card border-border/50 overflow-hidden rounded-2xl border">
           <button
             type="button"
             onClick={() => window.open("https://github.com", "_blank")}
@@ -96,9 +96,9 @@ function MobileActionItems() {
           <button
             type="button"
             onClick={() => setShowLogoutConfirm(true)}
-            className="text-destructive hover:bg-accent flex w-full items-center gap-4 px-4 py-3.5 text-base transition-colors"
+            className="hover:bg-accent text-foreground flex w-full items-center gap-4 px-4 py-3.5 text-base transition-colors"
           >
-            <LogOut className="size-5" />
+            <LogOut className="text-muted-foreground size-5" />
             <span className="flex-1 text-left">Выйти</span>
           </button>
         </div>
