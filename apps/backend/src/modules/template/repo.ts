@@ -67,6 +67,15 @@ export const templateRepo = {
     return row;
   },
 
+  async getDefaultForUser(userId: string) {
+    return db.query.templatePreset.findFirst({
+      where: and(
+        eq(templatePreset.userId, userId),
+        eq(templatePreset.isDefault, true),
+      ),
+    });
+  },
+
   async clearDefaultForUser(userId: string) {
     await db
       .update(templatePreset)

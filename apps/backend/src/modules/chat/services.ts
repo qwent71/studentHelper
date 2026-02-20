@@ -3,11 +3,85 @@ import { getAIService } from "../ai";
 import type { ChatMessage } from "../ai";
 import { createOCRService, OCRError } from "../ocr";
 import type { OCRResult } from "../ocr";
+import { templateRepo } from "../template/repo";
 
-const SYSTEM_PROMPT =
+const DEFAULT_SYSTEM_PROMPT =
   "Ты — StudentHelper, помощник для школьников. " +
   "Отвечай на русском языке. Решай задачи пошагово. " +
   "Если задача получена из изображения через OCR, учти, что текст может содержать неточности распознавания.";
+
+type TemplatePreset = {
+  tone: string;
+  knowledgeLevel: string;
+  outputFormat: string;
+  outputLanguage: string;
+  responseLength: string;
+  extraPreferences?: unknown;
+};
+
+export function buildSystemPrompt(
+  mode: "fast" | "learning",
+  template?: TemplatePreset | null,
+): string {
+  if (!template) return DEFAULT_SYSTEM_PROMPT;
+
+  const parts: string[] = [
+    "Ты — StudentHelper, помощник для школьников.",
+  ];
+
+  // Tone
+  const toneMap: Record<string, string> = {
+    friendly: "Используй дружелюбный и поддерживающий тон.",
+    formal: "Используй формальный и академический тон.",
+    casual: "Используй неформальный, разговорный тон.",
+    encouraging: "Используй мотивирующий и ободряющий тон.",
+  };
+  parts.push(toneMap[template.tone] ?? `Тон общения: ${template.tone}.`);
+
+  // Knowledge level
+  const levelMap: Record<string, string> = {
+    basic: "Объясняй простым языком, избегай сложных терминов.",
+    intermediate: "Используй умеренную сложность объяснений.",
+    advanced: "Можешь использовать продвинутую терминологию и сложные концепции.",
+  };
+  parts.push(levelMap[template.knowledgeLevel] ?? `Уровень знаний ученика: ${template.knowledgeLevel}.`);
+
+  // Output format
+  const formatMap: Record<string, string> = {
+    full: "Давай полные развёрнутые ответы с пояснениями.",
+    concise: "Давай краткие ответы по существу.",
+    "step-by-step": "Давай пошаговые решения с нумерацией шагов.",
+  };
+  parts.push(formatMap[template.outputFormat] ?? `Формат ответа: ${template.outputFormat}.`);
+
+  // Response length
+  const lengthMap: Record<string, string> = {
+    short: "Ответы должны быть короткими (1-3 предложения).",
+    medium: "Ответы средней длины.",
+    long: "Давай подробные, развёрнутые ответы.",
+  };
+  parts.push(lengthMap[template.responseLength] ?? `Длина ответа: ${template.responseLength}.`);
+
+  // Language
+  if (template.outputLanguage !== "ru") {
+    parts.push(`Отвечай на языке: ${template.outputLanguage}.`);
+  } else {
+    parts.push("Отвечай на русском языке.");
+  }
+
+  // Mode-specific instructions
+  if (mode === "fast") {
+    parts.push("Режим: быстрый ответ. Дай решение задачи.");
+  } else {
+    parts.push("Режим: обучение. Помоги ученику понять, как решать задачу, а не просто дай ответ.");
+  }
+
+  parts.push(
+    "Если задача получена из изображения через OCR, учти, что текст может содержать неточности распознавания.",
+  );
+
+  return parts.join(" ");
+}
 
 export const chatService = {
   async createSession(userId: string, mode: "fast" | "learning", title?: string) {
@@ -53,6 +127,7 @@ export const chatService = {
     content: string,
     sourceType: "text" | "image" | "rag" = "text",
     imageBuffer?: Buffer,
+    templateId?: string,
   ) {
     const session = await chatRepo.getSessionById(sessionId);
     if (!session || session.userId !== userId) return null;
@@ -90,10 +165,30 @@ export const chatService = {
       sourceType: imageBuffer ? "image" : sourceType,
     });
 
+    // Resolve template: explicit templateId > user's default > none (safe fallback)
+    let template: TemplatePreset | null = null;
+    try {
+      if (templateId) {
+        const preset = await templateRepo.getById(templateId);
+        if (preset && preset.userId === userId) {
+          template = preset;
+        }
+      } else {
+        const defaultPreset = await templateRepo.getDefaultForUser(userId);
+        if (defaultPreset) {
+          template = defaultPreset;
+        }
+      }
+    } catch (error) {
+      console.error("[chat] Failed to resolve template, using default prompt:", error);
+    }
+
+    const systemPrompt = buildSystemPrompt(session.mode, template);
+
     // Build conversation context from history
     const history = await chatRepo.getMessagesByChatId(sessionId);
     const messages: ChatMessage[] = [
-      { role: "system", content: SYSTEM_PROMPT },
+      { role: "system", content: systemPrompt },
     ];
 
     // Include recent history (excluding the just-created user message which is already in DB)

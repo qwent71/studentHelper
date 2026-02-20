@@ -81,6 +81,8 @@ export const chatRoutes = new Elysia({ prefix: "/chat" })
         user.id,
         body.content,
         body.sourceType,
+        undefined,
+        body.templateId,
       );
       if (!result)
         return status(404, { error: "Session not found or not active" });
@@ -98,6 +100,7 @@ export const chatRoutes = new Elysia({ prefix: "/chat" })
             t.Literal("rag"),
           ]),
         ),
+        templateId: t.Optional(t.String()),
       }),
     },
   )
@@ -114,6 +117,7 @@ export const chatRoutes = new Elysia({ prefix: "/chat" })
         body.content ?? "",
         "image",
         imageBuffer,
+        body.templateId,
       );
       if (!result)
         return status(404, { error: "Session not found or not active" });
@@ -128,6 +132,7 @@ export const chatRoutes = new Elysia({ prefix: "/chat" })
           maxSize: "10m",
         }),
         content: t.Optional(t.String()),
+        templateId: t.Optional(t.String()),
       }),
     },
   )
