@@ -88,7 +88,7 @@
         "Шаг 3: Проверить успешное выполнение через fallback и лог события"
       ],
       "dependencies": ["TASK-001"],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "TASK-005",

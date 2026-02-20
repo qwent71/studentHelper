@@ -121,3 +121,58 @@
 - Template fields (tone, knowledgeLevel, outputFormat, outputLanguage, responseLength) are free-text — consider adding enums/validation when UI is built (TASK-022)
 - `extraPreferences` is JSONB for flexible future fields
 - Pre-existing failure in `smoke.test.ts` (`GET /chat` returns 404) — caused by TASK-006 chat route restructuring, not related to TASK-009
+
+## TASK-004 — OCR provider abstraction with fallback chain (DONE)
+
+**Date**: 2026-02-20
+**Branch**: pdr
+**Commits**: 40b4cbe, 95b14d8
+
+### What was done
+- **New module**: `modules/ocr/` with provider abstraction and fallback chain service
+- **Interface** (`providers/types.ts`):
+  - `OCRProvider` — unified interface with `name` and `extractText(imageBuffer) → OCRResult`
+  - `OCRResult` — `{ text, confidence, provider }`
+- **Three adapters**:
+  - `GoogleVisionProvider` — calls Google Cloud Vision REST API (`TEXT_DETECTION`), computes average block confidence from pages
+  - `TesseractProvider` — uses `tesseract.js` v7 (pure JS OCR), supports `rus+eng` languages, normalizes confidence to 0-1
+  - `NoneProvider` — no-op provider returning empty text with 0 confidence (for dev/testing)
+- **OCRService** (`ocr-service.ts`):
+  - Accepts ordered array of providers as fallback chain
+  - Falls back to next provider on: error, timeout, or low confidence (below `confidenceThreshold`)
+  - Configurable `timeoutMs` (default 30s) per provider call
+  - `onFallback` callback fires with `ProviderAttempt` details (provider name, error/lowConfidence, durationMs) and next provider name
+  - Last provider returns low-confidence result rather than throwing (graceful degradation)
+  - Throws `OCRError` with all `attempts` only when every provider fails
+- **Factory** (`index.ts`):
+  - `createOCRService()` builds service from env config (`OCR_PROVIDER`, `OCR_FALLBACK_PROVIDER`, `OCR_CONFIDENCE_THRESHOLD`)
+  - Validates `GOOGLE_VISION_API_KEY` presence when google-vision is selected
+  - Logs fallback events to console with reason and duration
+- **Dependency**: Added `tesseract.js@7.0.0` to backend
+
+### Test results (15 unit tests, all pass)
+**ocr-service.test.ts** (12 tests):
+1. Primary provider returns result when confidence above threshold
+2. Primary used, fallback skipped when primary succeeds
+3. Falls back to next provider when primary throws
+4. Falls back on timeout (100ms timeout with 500ms slow provider)
+5. Falls back on low confidence
+6. Throws OCRError with all attempts when all providers fail
+7. Returns low-confidence result from last provider instead of throwing
+8. onFallback called with error details on error fallback
+9. onFallback called with lowConfidence flag on confidence fallback
+10. Logs multiple fallback events in chain of 3 providers
+11. Throws when constructed with empty providers
+12. NoneProvider returns empty text with zero confidence
+
+**ocr-tesseract.test.ts** (3 tests):
+13. TesseractProvider processes BMP image buffer and returns valid OCRResult shape
+14. Full fallback chain: failing primary → real Tesseract, with onFallback event logged
+15. NoneProvider works as final fallback in chain
+
+### Notes for next tasks
+- TASK-004 unblocks: TASK-007 (e2e OCR → OpenRouter → chat pipeline)
+- The `createOCRService()` factory is ready to be used in TASK-007's upload pipeline
+- Google Vision adapter is implemented but untested against real API (needs `GOOGLE_VISION_API_KEY`)
+- Tesseract works fully offline, tested with real image buffers
+- Env vars already defined: `OCR_PROVIDER` (default: google-vision), `OCR_FALLBACK_PROVIDER` (default: none), `OCR_CONFIDENCE_THRESHOLD` (default: 0.7)
