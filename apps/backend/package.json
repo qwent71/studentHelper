@@ -36,6 +36,7 @@
     "elysia": "^1.2.25",
     "ioredis": "^5.9.2",
     "jose": "^6.1.3",
+    "openai": "^4.78.1",
     "postgres": "^3.4.8"
   },
   "devDependencies": {
