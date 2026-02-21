@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { StreamEvent } from "@student-helper/contracts/stream";
 import { api } from "@/shared/api/eden";
 import { useCentrifugoSubscription } from "@/shared/centrifugo/use-centrifugo-subscription";
-import type { Chat, Message, StreamingState } from "@/entities/chat/model/types";
+import type { Chat, Message, StreamingState } from "@/entities/chat";
 
 interface UseChatOptions {
   chatId: string;

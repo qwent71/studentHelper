@@ -1,6 +1,7 @@
 "use client";
 
-import { Loader2, MessageSquare } from "lucide-react";
+import { AlertCircle, Loader2, MessageSquare, RotateCcw } from "lucide-react";
+import { Button } from "@student-helper/ui/web/primitives/button";
 import {
   Conversation,
   ConversationContent,
@@ -20,6 +21,7 @@ interface ChatViewProps {
   streaming: StreamingState;
   isLoading: boolean;
   onSend: (content: string) => void;
+  onRetry?: () => void;
 }
 
 export function ChatView({
@@ -27,6 +29,7 @@ export function ChatView({
   streaming,
   isLoading,
   onSend,
+  onRetry,
 }: ChatViewProps) {
   const hasMessages = messages.length > 0 || streaming.isStreaming;
 
@@ -73,6 +76,26 @@ export function ChatView({
                 </MessageContent>
               </Message>
             )}
+
+            {streaming.error && !streaming.isStreaming && (
+              <div className="flex items-center gap-3 rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-3">
+                <AlertCircle className="text-destructive size-5 shrink-0" />
+                <span className="text-destructive text-sm">
+                  {streaming.error}
+                </span>
+                {onRetry && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={onRetry}
+                    className="ml-auto shrink-0"
+                  >
+                    <RotateCcw className="size-3.5" />
+                    Повторить
+                  </Button>
+                )}
+              </div>
+            )}
           </ConversationContent>
         ) : (
           <ConversationEmptyState
@@ -84,7 +107,7 @@ export function ChatView({
         <ConversationScrollButton />
       </Conversation>
 
-      <div className="border-t p-4">
+      <div className="border-t p-2 sm:p-4">
         <ChatInput onSend={onSend} isStreaming={streaming.isStreaming} />
       </div>
     </div>

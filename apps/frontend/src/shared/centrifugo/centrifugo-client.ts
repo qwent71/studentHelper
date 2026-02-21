@@ -4,14 +4,6 @@ import { api } from "@/shared/api/eden";
 const DEFAULT_CENTRIFUGO_WS_URL = "ws://localhost:8800/connection/websocket";
 
 function getCentrifugoWsUrl(): string {
-  if (typeof window === "undefined") {
-    return (
-      process.env.CENTRIFUGO_WS_URL ??
-      process.env.NEXT_PUBLIC_CENTRIFUGO_WS_URL ??
-      DEFAULT_CENTRIFUGO_WS_URL
-    );
-  }
-
   return process.env.NEXT_PUBLIC_CENTRIFUGO_WS_URL ?? DEFAULT_CENTRIFUGO_WS_URL;
 }
 

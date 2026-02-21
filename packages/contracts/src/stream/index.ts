@@ -15,4 +15,4 @@ export {
   type DoneEvent,
   type ErrorEvent,
   type StreamEvent,
-} from "./events.js";
+} from "./events";
