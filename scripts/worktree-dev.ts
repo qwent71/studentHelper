@@ -1,5 +1,6 @@
 #!/usr/bin/env bun
 import { createServer } from "node:net";
+import { resolve } from "node:path";
 
 const decoder = new TextDecoder();
 
@@ -17,6 +18,65 @@ interface PortRegistry {
 }
 
 const PORT_REGISTRY_FILE = ".worktree-ports.json";
+const DOCKER_COMPOSE_FILE = "docker/docker-compose.dev.yml";
+
+/**
+ * Run a command synchronously
+ */
+function runSync(
+  cmd: string[],
+  options?: {
+    cwd?: string;
+    env?: Record<string, string | undefined>;
+    stdout?: "pipe" | "inherit" | "ignore";
+    stderr?: "pipe" | "inherit" | "ignore";
+  },
+) {
+  return Bun.spawnSync(cmd, {
+    cwd: options?.cwd,
+    env: options?.env,
+    stdout: options?.stdout ?? "pipe",
+    stderr: options?.stderr ?? "pipe",
+  });
+}
+
+/**
+ * Run a command or throw an error if it fails
+ */
+function runOrThrow(
+  cmd: string[],
+  options?: {
+    cwd?: string;
+    env?: Record<string, string | undefined>;
+    stdout?: "pipe" | "inherit" | "ignore";
+    stderr?: "pipe" | "inherit" | "ignore";
+  },
+) {
+  const result = runSync(cmd, options);
+  if (result.exitCode !== 0) {
+    const stderr =
+      options?.stderr === "inherit" ? "" : decoder.decode(result.stderr).trim();
+    throw new Error(
+      `Command failed (${result.exitCode}): ${cmd.join(" ")}\n${stderr}`,
+    );
+  }
+  return result;
+}
+
+/**
+ * Check if Docker is available
+ */
+function ensureDockerAvailable() {
+  const result = runSync(["docker", "info"], {
+    stdout: "ignore",
+    stderr: "ignore",
+  });
+  if (result.exitCode !== 0) {
+    throw new Error(
+      "Docker is not available. Start Docker and retry worktree:start.",
+    );
+  }
+}
 
 /**
  * Check if a port is available for binding
@@ -247,6 +307,31 @@ NEXT_PUBLIC_FRONTEND_URL=http://localhost:${ports.FRONTEND_PORT}
 }
 
 /**
+ * Start Docker Compose services with worktree-specific configuration
+ */
+function startDockerCompose(worktreeId: string, ports: PortAllocation): void {
+  const composeFile = resolve(import.meta.dir, "..", DOCKER_COMPOSE_FILE);
+
+  // Prepare environment variables for Docker Compose
+  const composeEnv = {
+    ...process.env,
+    WORKTREE_ID: worktreeId,
+    POSTGRES_PORT: ports.POSTGRES_PORT.toString(),
+    REDIS_PORT: ports.REDIS_PORT.toString(),
+    CENTRIFUGO_WS_PORT: ports.CENTRIFUGO_WS_PORT.toString(),
+    CENTRIFUGO_API_PORT: ports.CENTRIFUGO_API_PORT.toString(),
+    COMPOSE_PROJECT_NAME: `studenthelper_${worktreeId}`,
+  };
+
+  // Start Docker Compose services
+  runOrThrow(["docker", "compose", "-f", composeFile, "up", "-d"], {
+    env: composeEnv,
+    stdout: "inherit",
+    stderr: "inherit",
+  });
+}
+
+/**
  * Show usage instructions
  */
 function showUsage() {
@@ -280,23 +365,41 @@ async function main() {
   switch (command) {
     case "start": {
       const worktreeId = getWorktreeId();
-      console.log(`Worktree ID: ${worktreeId}`);
-      console.log("Allocating ports...");
+      console.log(`\n🌿 Starting worktree environment: ${worktreeId}\n`);
 
+      // Check Docker availability
+      console.log("Checking Docker...");
+      ensureDockerAvailable();
+      console.log("✓ Docker is available\n");
+
+      // Allocate ports
+      console.log("Allocating ports...");
       const ports = await allocatePorts(worktreeId);
 
-      console.log("\nAllocated ports:");
+      console.log("\n📋 Allocated ports:");
       console.log(`  PostgreSQL:        ${ports.POSTGRES_PORT}`);
       console.log(`  Redis:             ${ports.REDIS_PORT}`);
       console.log(`  Centrifugo WS:     ${ports.CENTRIFUGO_WS_PORT}`);
       console.log(`  Centrifugo API:    ${ports.CENTRIFUGO_API_PORT}`);
       console.log(`  Backend:           ${ports.BACKEND_PORT}`);
       console.log(`  Frontend:          ${ports.FRONTEND_PORT}`);
-      console.log(`\nPort registry saved to ${PORT_REGISTRY_FILE}`);
+      console.log(`\n✓ Port registry saved to ${PORT_REGISTRY_FILE}\n`);
 
-      console.log("\nGenerating environment file...");
+      // Generate environment file
+      console.log("Generating environment file...");
       await generateEnvFile(worktreeId, ports);
-      console.log(`Environment file created: .env.${worktreeId}`);
+      console.log(`✓ Environment file created: .env.${worktreeId}\n`);
+
+      // Start Docker Compose services
+      console.log("Starting Docker Compose services...");
+      startDockerCompose(worktreeId, ports);
+      console.log("✓ Docker Compose services started\n");
+
+      console.log("🎉 Worktree environment is ready!");
+      console.log("\nNext steps:");
+      console.log(`  1. Load environment: export $(cat .env.${worktreeId} | xargs)`);
+      console.log("  2. Run migrations:   bun worktree:migrate");
+      console.log("  3. Start dev server: bun run dev\n");
       break;
     }
     case "stop":
