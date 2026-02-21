@@ -80,6 +80,14 @@ const envSchema = z.object({
   CENTRIFUGO_TOKEN_SECRET: z.string().default("centrifugo-dev-secret"),
   CENTRIFUGO_URL: z.string().default("http://localhost:8800"),
   OPENAI_API_KEY: z.string().optional(),
+  OPENROUTER_API_KEY: z.string().optional(),
+  OPENROUTER_BASE_URL: z
+    .string()
+    .default("https://openrouter.ai/api/v1"),
+  OPENROUTER_DEFAULT_MODEL: z
+    .string()
+    .default("google/gemini-2.0-flash-001"),
+  CENTRIFUGO_API_KEY: z.string().default("api-key"),
 });
 
 export type Env = z.infer<typeof envSchema>;
