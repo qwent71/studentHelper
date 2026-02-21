@@ -1,6 +1,10 @@
+import type { ConnectionOptions } from "bullmq";
 import { Worker } from "bullmq";
 import OpenAI from "openai";
 import { redis } from "../redis";
+
+// Cast needed: top-level ioredis and bullmq's bundled ioredis types diverge
+const connection = redis as unknown as ConnectionOptions;
 import { streamChatCompletions } from "../lib/llm";
 import { publishToChannel, getChatChannel } from "../lib/centrifugo";
 import * as repo from "../modules/chat/repo";
@@ -11,7 +15,7 @@ import type { MessageGenerationJobData } from "./index";
 new Worker<MessageGenerationJobData>(
   "message-generation",
   async (job) => {
-    const { chatId, userId } = job.data;
+    const { chatId } = job.data;
     const channel = getChatChannel(chatId);
 
     try {
@@ -91,7 +95,7 @@ new Worker<MessageGenerationJobData>(
     }
   },
   {
-    connection: redis,
+    connection,
     concurrency: 3,
     removeOnComplete: { count: 100 },
     removeOnFail: { count: 50 },
@@ -100,8 +104,8 @@ new Worker<MessageGenerationJobData>(
 
 new Worker(
   "auto-archive",
-  async (job) => {
+  async () => {
     // TODO: implement auto-archive logic
   },
-  { connection: redis },
+  { connection },
 );
