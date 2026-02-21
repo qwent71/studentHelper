@@ -332,6 +332,27 @@ function startDockerCompose(worktreeId: string, ports: PortAllocation): void {
 }
 
 /**
+ * Stop Docker Compose services for current worktree
+ */
+function stopDockerCompose(worktreeId: string): void {
+  const composeFile = resolve(import.meta.dir, "..", DOCKER_COMPOSE_FILE);
+
+  // Prepare environment variables for Docker Compose
+  const composeEnv = {
+    ...process.env,
+    WORKTREE_ID: worktreeId,
+    COMPOSE_PROJECT_NAME: `studenthelper_${worktreeId}`,
+  };
+
+  // Stop Docker Compose services (without removing volumes)
+  runOrThrow(["docker", "compose", "-f", composeFile, "down"], {
+    env: composeEnv,
+    stdout: "inherit",
+    stderr: "inherit",
+  });
+}
+
+/**
  * Show usage instructions
  */
 function showUsage() {
@@ -402,10 +423,27 @@ async function main() {
       console.log("  3. Start dev server: bun run dev\n");
       break;
     }
-    case "stop":
-      console.log("Stop command not yet implemented");
-      process.exit(1);
+    case "stop": {
+      const worktreeId = getWorktreeId();
+      console.log(`\n🛑 Stopping worktree environment: ${worktreeId}\n`);
+
+      // Check Docker availability
+      console.log("Checking Docker...");
+      ensureDockerAvailable();
+      console.log("✓ Docker is available\n");
+
+      // Stop Docker Compose services
+      console.log("Stopping Docker Compose services...");
+      stopDockerCompose(worktreeId);
+      console.log("✓ Docker Compose services stopped\n");
+
+      console.log("✅ Worktree environment stopped successfully!");
+      console.log("\nNote:");
+      console.log("  - Docker volumes preserved (data not deleted)");
+      console.log("  - Port allocations saved for next start");
+      console.log(`  - To restart: bun worktree:start\n`);
       break;
+    }
     default:
       console.error(`Unknown command: ${command}`);
       showUsage();
