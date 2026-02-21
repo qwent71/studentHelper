@@ -14,7 +14,9 @@
   },
   "dependencies": {
     "@elysiajs/eden": "^1.4.8",
+    "@student-helper/contracts": "*",
     "@student-helper/ui": "*",
+    "centrifuge": "^5.5.3",
     "better-auth": "^1.4.18",
     "elysia": "^1.4.24",
     "lucide-react": "^0.563.0",

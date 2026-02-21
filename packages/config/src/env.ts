@@ -79,6 +79,7 @@ const envSchema = z.object({
   REDIS_URL: z.string().default("redis://localhost:6379"),
   CENTRIFUGO_TOKEN_SECRET: z.string().default("centrifugo-dev-secret"),
   CENTRIFUGO_URL: z.string().default("http://localhost:8800"),
+  CENTRIFUGO_API_KEY: z.string().default("api-key"),
   OPENAI_API_KEY: z.string().optional(),
 });
 

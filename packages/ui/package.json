@@ -16,7 +16,8 @@
     "./web/primitives/*": "./src/web/primitives/*.tsx",
     "./web/components/*": "./src/web/components/*.tsx",
     "./web/hooks/*": "./src/web/hooks/*.ts",
-    "./lib/*": "./src/utils/*.ts"
+    "./lib/*": "./src/utils/*.ts",
+    "./ai/*": "./src/components/ai-elements/*.tsx"
   },
   "scripts": {
     "lint": "eslint . --max-warnings 0",
@@ -25,13 +26,25 @@
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.4",
+    "@streamdown/cjk": "^1.0.2",
+    "@streamdown/code": "^1.0.3",
+    "@streamdown/math": "^1.0.2",
+    "@streamdown/mermaid": "^1.0.2",
+    "ai": "^6.0.97",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "cmdk": "^1.1.1",
+    "katex": "^0.16.28",
     "lucide-react": "^0.575.0",
+    "nanoid": "^5.1.6",
     "radix-ui": "^1.4.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "rehype-katex": "^7.0.1",
+    "remark-math": "^6.0.0",
+    "streamdown": "^2.3.0",
     "tailwind-merge": "^3.4.0",
+    "use-stick-to-bottom": "^1.1.3",
     "vaul": "^1.1.2"
   },
   "devDependencies": {
