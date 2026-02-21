@@ -12,6 +12,12 @@ interface PortAllocation {
   FRONTEND_PORT: number;
 }
 
+interface PortRegistry {
+  [worktreeId: string]: PortAllocation;
+}
+
+const PORT_REGISTRY_FILE = ".worktree-ports.json";
+
 /**
  * Check if a port is available for binding
  */
@@ -19,7 +25,6 @@ async function isPortAvailable(port: number): Promise<boolean> {
   try {
     await new Promise<void>((resolve, reject) => {
       const server = createServer();
-      server.unref();
       server.once("error", reject);
       server.listen(port, "127.0.0.1", () => {
         server.close((error) => {
@@ -77,15 +82,63 @@ function getWorktreeId(): string {
 }
 
 /**
+ * Read port registry from .worktree-ports.json
+ * Returns empty object if file doesn't exist
+ */
+async function readPortRegistry(): Promise<PortRegistry> {
+  try {
+    const file = Bun.file(PORT_REGISTRY_FILE);
+    const exists = await file.exists();
+    if (!exists) {
+      return {};
+    }
+    const registry = await file.json();
+    return registry as PortRegistry;
+  } catch {
+    return {};
+  }
+}
+
+/**
+ * Write port registry to .worktree-ports.json
+ */
+async function writePortRegistry(registry: PortRegistry): Promise<void> {
+  await Bun.write(PORT_REGISTRY_FILE, JSON.stringify(registry, null, 2));
+}
+
+/**
+ * Check if all ports in an allocation are still available
+ */
+async function arePortsStillAvailable(
+  allocation: PortAllocation,
+): Promise<boolean> {
+  const ports = [
+    allocation.POSTGRES_PORT,
+    allocation.REDIS_PORT,
+    allocation.CENTRIFUGO_WS_PORT,
+    allocation.CENTRIFUGO_API_PORT,
+    allocation.BACKEND_PORT,
+    allocation.FRONTEND_PORT,
+  ];
+
+  for (const port of ports) {
+    if (!(await isPortAvailable(port))) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/**
  * Allocate ports for a worktree
+ * Checks registry for existing ports and reuses if available
  * Default starting ports: PostgreSQL 5432, Redis 6379, Centrifugo WS 8800, Centrifugo API 8801, Backend 3001, Frontend 3000
  */
 async function allocatePorts(
   worktreeId: string,
   defaults: Partial<PortAllocation> = {},
 ): Promise<PortAllocation> {
-  const used = new Set<number>();
-
   // Default starting ports
   const postgresStart = defaults.POSTGRES_PORT ?? 5432;
   const redisStart = defaults.REDIS_PORT ?? 6379;
@@ -106,7 +159,19 @@ async function allocatePorts(
     };
   }
 
-  // Allocate ports sequentially
+  // Check registry for existing ports
+  const registry = await readPortRegistry();
+  const savedPorts = registry[worktreeId];
+
+  if (savedPorts) {
+    // Validate that saved ports are still available
+    if (await arePortsStillAvailable(savedPorts)) {
+      return savedPorts;
+    }
+  }
+
+  // Allocate new ports if no saved ports or they're not available
+  const used = new Set<number>();
   const POSTGRES_PORT = await findFreePort(postgresStart, used);
   const REDIS_PORT = await findFreePort(redisStart, used);
   const CENTRIFUGO_WS_PORT = await findFreePort(centrifugoWsStart, used);
@@ -114,7 +179,7 @@ async function allocatePorts(
   const BACKEND_PORT = await findFreePort(backendStart, used);
   const FRONTEND_PORT = await findFreePort(frontendStart, used);
 
-  return {
+  const allocation: PortAllocation = {
     POSTGRES_PORT,
     REDIS_PORT,
     CENTRIFUGO_WS_PORT,
@@ -122,6 +187,12 @@ async function allocatePorts(
     BACKEND_PORT,
     FRONTEND_PORT,
   };
+
+  // Save to registry
+  registry[worktreeId] = allocation;
+  await writePortRegistry(registry);
+
+  return allocation;
 }
 
 /**
@@ -156,10 +227,23 @@ async function main() {
   }
 
   switch (command) {
-    case "start":
-      console.log("Start command not yet implemented");
-      process.exit(1);
+    case "start": {
+      const worktreeId = getWorktreeId();
+      console.log(`Worktree ID: ${worktreeId}`);
+      console.log("Allocating ports...");
+
+      const ports = await allocatePorts(worktreeId);
+
+      console.log("\nAllocated ports:");
+      console.log(`  PostgreSQL:        ${ports.POSTGRES_PORT}`);
+      console.log(`  Redis:             ${ports.REDIS_PORT}`);
+      console.log(`  Centrifugo WS:     ${ports.CENTRIFUGO_WS_PORT}`);
+      console.log(`  Centrifugo API:    ${ports.CENTRIFUGO_API_PORT}`);
+      console.log(`  Backend:           ${ports.BACKEND_PORT}`);
+      console.log(`  Frontend:          ${ports.FRONTEND_PORT}`);
+      console.log(`\nPort registry saved to ${PORT_REGISTRY_FILE}`);
       break;
+    }
     case "stop":
       console.log("Stop command not yet implemented");
       process.exit(1);
