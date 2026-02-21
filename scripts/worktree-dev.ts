@@ -17,7 +17,20 @@ interface PortRegistry {
   [worktreeId: string]: PortAllocation;
 }
 
-const PORT_REGISTRY_FILE = ".worktree-ports.json";
+// Store port registry in shared .git directory so all worktrees can access it
+function getPortRegistryFile(): string {
+  const gitCommonDir = Bun.spawnSync(
+    ["git", "rev-parse", "--git-common-dir"],
+    { stdout: "pipe" },
+  );
+  if (gitCommonDir.exitCode !== 0) {
+    throw new Error("Failed to find git common directory");
+  }
+  const gitDir = decoder.decode(gitCommonDir.stdout).trim();
+  return resolve(gitDir, "worktree-ports.json");
+}
+
+const PORT_REGISTRY_FILE = getPortRegistryFile();
 const DOCKER_COMPOSE_FILE = "docker/docker-compose.dev.yml";
 
 /**
@@ -86,7 +99,8 @@ async function isPortAvailable(port: number): Promise<boolean> {
     await new Promise<void>((resolve, reject) => {
       const server = createServer();
       server.once("error", reject);
-      server.listen(port, "127.0.0.1", () => {
+      // Bind to 0.0.0.0 to check all interfaces (matches Docker behavior)
+      server.listen(port, "0.0.0.0", () => {
         server.close((error) => {
           if (error) {
             reject(error);
