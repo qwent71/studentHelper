@@ -47,3 +47,6 @@ screenshots/
 # Misc
 .DS_Store
 *.pem
+
+# Auto Claude data directory
+.auto-claude/

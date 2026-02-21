@@ -1,0 +1,39 @@
+{
+  "sandbox": {
+    "enabled": true,
+    "autoAllowBashIfSandboxed": true
+  },
+  "permissions": {
+    "defaultMode": "acceptEdits",
+    "allow": [
+      "Read(./**)",
+      "Write(./**)",
+      "Edit(./**)",
+      "Glob(./**)",
+      "Grep(./**)",
+      "Read(/Users/artem/Github/studentHelper/.auto-claude/worktrees/tasks/002-worktree-multi-agent-development-with-database-iso/**)",
+      "Write(/Users/artem/Github/studentHelper/.auto-claude/worktrees/tasks/002-worktree-multi-agent-development-with-database-iso/**)",
+      "Edit(/Users/artem/Github/studentHelper/.auto-claude/worktrees/tasks/002-worktree-multi-agent-development-with-database-iso/**)",
+      "Glob(/Users/artem/Github/studentHelper/.auto-claude/worktrees/tasks/002-worktree-multi-agent-development-with-database-iso/**)",
+      "Grep(/Users/artem/Github/studentHelper/.auto-claude/worktrees/tasks/002-worktree-multi-agent-development-with-database-iso/**)",
+      "Read(/Users/artem/Github/studentHelper/.auto-claude/worktrees/tasks/002-worktree-multi-agent-development-with-database-iso/.auto-claude/specs/002-worktree-multi-agent-development-with-database-iso/**)",
+      "Write(/Users/artem/Github/studentHelper/.auto-claude/worktrees/tasks/002-worktree-multi-agent-development-with-database-iso/.auto-claude/specs/002-worktree-multi-agent-development-with-database-iso/**)",
+      "Edit(/Users/artem/Github/studentHelper/.auto-claude/worktrees/tasks/002-worktree-multi-agent-development-with-database-iso/.auto-claude/specs/002-worktree-multi-agent-development-with-database-iso/**)",
+      "Read(/Users/artem/Github/studentHelper/.auto-claude/**)",
+      "Write(/Users/artem/Github/studentHelper/.auto-claude/**)",
+      "Edit(/Users/artem/Github/studentHelper/.auto-claude/**)",
+      "Glob(/Users/artem/Github/studentHelper/.auto-claude/**)",
+      "Grep(/Users/artem/Github/studentHelper/.auto-claude/**)",
+      "Bash(*)",
+      "WebFetch(*)",
+      "WebSearch(*)",
+      "mcp__context7__resolve-library-id(*)",
+      "mcp__context7__query-docs(*)",
+      "mcp__graphiti-memory__search_nodes(*)",
+      "mcp__graphiti-memory__search_facts(*)",
+      "mcp__graphiti-memory__add_episode(*)",
+      "mcp__graphiti-memory__get_episodes(*)",
+      "mcp__graphiti-memory__get_entity_edge(*)"
+    ]
+  }
+}

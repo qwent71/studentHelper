@@ -196,6 +196,57 @@ async function allocatePorts(
 }
 
 /**
+ * Generate .env.{worktree_id} file with allocated ports
+ */
+async function generateEnvFile(
+  worktreeId: string,
+  ports: PortAllocation,
+): Promise<void> {
+  const envFileName = `.env.${worktreeId}`;
+
+  const envContent = `# Environment
+NODE_ENV=development
+
+# Ports
+FRONTEND_PORT=${ports.FRONTEND_PORT}
+BACKEND_PORT=${ports.BACKEND_PORT}
+
+# Backend URL (used by frontend to reach the API)
+BACKEND_URL=http://localhost:${ports.BACKEND_PORT}
+
+# Frontend URL (used by backend for CORS / auth)
+FRONTEND_URL=http://localhost:${ports.FRONTEND_PORT}
+
+# Database
+DATABASE_URL=postgresql://studenthelper:studenthelper@localhost:${ports.POSTGRES_PORT}/studenthelper
+
+# Auth
+BETTER_AUTH_SECRET=ee351d396c28282c5f729512999c552ee8458fe5cd44ed75a20f6d1f6248f48e
+
+# Redis
+REDIS_URL=redis://localhost:${ports.REDIS_PORT}
+
+# Centrifugo
+CENTRIFUGO_TOKEN_SECRET=centrifugo-dev-secret
+CENTRIFUGO_URL=http://localhost:${ports.CENTRIFUGO_WS_PORT}
+
+# Next.js Public Variables
+NEXT_PUBLIC_BACKEND_URL=http://localhost:${ports.BACKEND_PORT}
+NEXT_PUBLIC_FRONTEND_URL=http://localhost:${ports.FRONTEND_PORT}
+
+# OpenAI (optional)
+# OPENAI_API_KEY=sk-...
+
+# Docker compose overrides (optional, used by docker/docker-compose.yml)
+# COMPOSE_DATABASE_URL=postgresql://studenthelper:studenthelper@postgres:5432/studenthelper
+# COMPOSE_REDIS_URL=redis://redis:6379
+# COMPOSE_CENTRIFUGO_URL=http://centrifugo:8000
+`;
+
+  await Bun.write(envFileName, envContent);
+}
+
+/**
  * Show usage instructions
  */
 function showUsage() {
@@ -242,6 +293,10 @@ async function main() {
       console.log(`  Backend:           ${ports.BACKEND_PORT}`);
       console.log(`  Frontend:          ${ports.FRONTEND_PORT}`);
       console.log(`\nPort registry saved to ${PORT_REGISTRY_FILE}`);
+
+      console.log("\nGenerating environment file...");
+      await generateEnvFile(worktreeId, ports);
+      console.log(`Environment file created: .env.${worktreeId}`);
       break;
     }
     case "stop":
