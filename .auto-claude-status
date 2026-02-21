@@ -1,25 +1,25 @@
 {
   "active": true,
-  "spec": "002-worktree-multi-agent-development-with-database-iso",
+  "spec": "003-chat-ui-with-real-time-streaming",
   "state": "building",
   "subtasks": {
-    "completed": 3,
-    "total": 10,
+    "completed": 5,
+    "total": 15,
     "in_progress": 1,
     "failed": 0
   },
   "phase": {
-    "current": "Environment File Generation",
+    "current": "Frontend Foundation & shadcn AI Components",
     "id": null,
-    "total": 1
+    "total": 3
   },
   "workers": {
     "active": 0,
     "max": 1
   },
   "session": {
-    "number": 4,
-    "started_at": "2026-02-21T05:11:32.187808"
+    "number": 7,
+    "started_at": "2026-02-21T06:28:54.965115"
   },
-  "last_update": "2026-02-21T05:19:00.594417"
+  "last_update": "2026-02-21T06:48:54.854478"
 }
