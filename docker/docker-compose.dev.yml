@@ -1,0 +1,43 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-studenthelper}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-studenthelper}
+      POSTGRES_DB: ${POSTGRES_DB:-studenthelper}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U studenthelper -d studenthelper"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  centrifugo:
+    image: centrifugo/centrifugo:v6
+    command: centrifugo --config=config.json
+    ports:
+      - "${CENTRIFUGO_WS_PORT:-8800}:8000"
+      - "${CENTRIFUGO_API_PORT:-8801}:8001"
+    volumes:
+      - ../centrifugo.json:/centrifugo/config.json:ro
+
+volumes:
+  postgres_data:
+    name: postgres_data_${WORKTREE_ID:-main}
+  redis_data:
+    name: redis_data_${WORKTREE_ID:-main}
